@@ -11,15 +11,6 @@ class Block
 
     machines: Machine[];
     instructions: Instruction[];
-    
-    Tick(pio: PIO)
-    {
-        for(let it of this.machines)
-        {
-            if(it.running)
-                it.Tick(this);
-        }
-    }
     constructor(pio: PIO, machines_n: number, instructions_n: number)
     {
         this.pio = pio;
@@ -31,7 +22,7 @@ class Block
         this.instructions = [];
         for(let i = 0; i < instructions_n; i++)
         {
-            this.instructions.push(new ops.nop());
+            this.instructions.push(new ops.NOP(0));
         }
     }
 }
