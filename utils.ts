@@ -45,3 +45,11 @@ export function LikeInteger32(n: number): number
 {
     return Mod(n, REG32_MAX);
 }
+export function msleep(n: number) 
+{
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+}
+export function sleep(n: number) 
+{
+    msleep(n*1000);
+}

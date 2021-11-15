@@ -12,10 +12,12 @@ export const PIN_LOW = 0;
 
 export class ProgramConfig
 {
-    length!: number;
+    instructions: Instruction[];
 
-    wrap!: number;
-    wrap_target!: number;
+    length: number;
+
+    wrap: number = 0;
+    wrap_target: number;
 
     sideset_opt_en: boolean = false;
     sideset_n: number = 0;
@@ -28,6 +30,13 @@ export class ProgramConfig
     pindirs_base: number = 0;
 
     jmp_pin: number = -1;
+
+    constructor(instructions: Instruction[])
+    {
+        this.instructions = instructions;
+        this.length = instructions.length;
+        this.wrap_target = instructions.length;
+    }
     
 }
 
@@ -268,7 +277,7 @@ class PIO
         return inst!;
     }
 
-    DecodeProgram(data: Int16Array): Instruction[]
+    DecodeProgram(data: Uint16Array): Instruction[]
     {
         let ret = [];
         for(let it of data)
@@ -297,11 +306,19 @@ class PIO
 
         return ret;
     }
-    AddProgram(block_index: number, machine_index: number, offset: number, instructions: Instruction[], config: ProgramConfig)
+    AddProgram(block_index: number, machine_index: number, offset: number, config: ProgramConfig)
     {
         AssertRange(this.blocks, block_index);
-        this.blocks[block_index].AddProgram(machine_index, offset, instructions, config);
+        this.blocks[block_index].AddProgram(machine_index, offset, config);
         this.UpdateAllPins();
+    }
+    StartProgram(block_index: number, machine_index: number) // TODO: program interface
+    {
+        this.blocks[block_index].machines[machine_index].running = true;
+    }
+    PushData(block_index: number, machine_index: number, dt: number) // TODO: program interface
+    {
+        this.blocks[block_index].machines[machine_index].TX_FIFO.Push(dt);
     }
 
     constructor(pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)

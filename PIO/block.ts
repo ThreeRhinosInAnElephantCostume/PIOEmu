@@ -45,10 +45,10 @@ class Block
         }
         return -1;
     }
-    AddProgram(machine_index: number, offset: number, instructions: Instruction[], config: ProgramConfig)
+    AddProgram(machine_index: number, offset: number, config: ProgramConfig)
     {
         Assert(!this.machines[machine_index].has_program);
-        this.AddInstructions(offset, instructions);
+        this.AddInstructions(offset, config.instructions);
         this.machines[machine_index].SetProgram(config, offset);
     }
     AddInstructions(offset: number, new_instructions: Instruction[])
