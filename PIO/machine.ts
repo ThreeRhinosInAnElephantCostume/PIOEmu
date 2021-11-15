@@ -4,9 +4,12 @@ import { PIO } from "./PIO";
 import { Block } from "./block";
 import * as ops  from "./instructions";
 import { FIFO } from "./FIFO";
+import { LikeInteger32 } from "../utils";
+
 
 class Machine
 {
+
     pio: PIO;
 
     offset!: number;
@@ -40,9 +43,28 @@ class Machine
     RX_FIFO = new FIFO<number>(4);
     TX_FIFO = new FIFO<number>(4);
 
-    X: number = 0;
-    Y: number = 0;
+    private _X: number = 0;
+    get X()
+    {
+        return this._X;
+    }
+    set X(v: number)
+    {
+        this._X = LikeInteger32(this._X);
+    }
+
+    private _Y: number = 0;
+    get Y()
+    {
+        return this._Y;
+    }
+    set Y(v: number)
+    {
+        this._Y = LikeInteger32(this._Y);
+    }
+
     STATUS: number = 0;
+
     private _ISR: number = 0;
     set ISR(v:number)
     {

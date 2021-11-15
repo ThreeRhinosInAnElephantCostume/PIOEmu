@@ -32,3 +32,12 @@ export function BitRange(n: number, low: number, high: number, reverse = false)
         r = BitReverse(r, (high-low));
     return r;
 }
+export function Mod(n: number, m: number): number 
+{
+    return ((n % m) + m) % m;
+}
+const REG32_MAX = Math.pow(2, 32)-1;
+export function LikeInteger32(n: number): number
+{
+    return Mod(n, REG32_MAX);
+}
