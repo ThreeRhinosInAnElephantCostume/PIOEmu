@@ -42,6 +42,10 @@ export class FIFO<T>
             this.Pop(); 
         this.data.push(v);
     }
+    Clear()
+    {
+        this.data = [];
+    }
 
     constructor(size: number)
     {

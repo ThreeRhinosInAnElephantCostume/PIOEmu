@@ -4,6 +4,10 @@ export function Assert(b: boolean, msg: string="Unspecified assertion")
     if(!b)
         throw msg;
 }
+export function AssertRange(arr: any[], indx: number)
+{
+    Assert(indx >= 0 && indx < arr.length, "Index out of range!");
+}
 export function BitReverse(n: number, nbits: number=32)
 {
     let r=  0;

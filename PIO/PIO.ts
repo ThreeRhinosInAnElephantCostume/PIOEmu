@@ -3,20 +3,40 @@ export {PIO};
 import { Machine } from "./machine";
 import { Block } from "./block";
 import { Instruction, JMP, MOV, PULL } from "./instructions";
-import { Assert, BitRange } from "../utils";
+import { Assert, AssertRange, BitRange } from "../utils";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
 export const PIN_HIGH = 3.3;
 export const PIN_LOW = 0;
 
+export class ProgramConfig
+{
+    length!: number;
 
-class Pin
+    wrap!: number;
+    wrap_target!: number;
+
+    sideset_opt_en: boolean = false;
+    sideset_n: number = 0;
+    sideset_base: number = 0;
+
+    pins_n: number = 0;
+    pins_base: number = 0;
+
+    pindirs_n: number = 0;
+    pindirs_base: number = 0;
+
+    jmp_pin: number = -1;
+    
+}
+
+export class Pin
 {
     isout: boolean = false;
     state: boolean = false;
 }
-class Waveform
+export class Waveform
 {
     private samples: number[];
     private next: number = 0;
@@ -103,7 +123,7 @@ class Waveform
         this.resolution = resolution;
     }
 }
-class Log
+export class Log
 {
     private pin_waveforms: Waveform[][];
     AddSample(pinid:number, s: number)
@@ -154,6 +174,8 @@ class PIO
 
     SimulatePin(pinid: number, state: boolean, cycle: bigint)
     {
+        if(cycle < 0)
+            return;
         const lastupdate = this.log.GetLastSampleCycle(pinid);
         if(cycle == lastupdate)
             return;
@@ -161,6 +183,14 @@ class PIO
         for(let i = 0; i < lastupdate-cycle; i++)
         {
             this.log.AddSample(pinid, (state) ? PIN_HIGH : PIN_LOW); // TODO: simulating pin capacitance
+        }
+    }
+
+    UpdateAllPins()
+    {
+        for(let i = 0; i < this.pins.length; i++)
+        {
+            this.SimulatePin(i, this.pins[i].state, this.current_cycle-1n);
         }
     }
     
@@ -175,7 +205,7 @@ class PIO
     GetPin(pinid: number)
     {
         Assert(pinid >= 0 && pinid < this.pins.length);
-        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
+        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle-1n);
         return this.pins[pinid].state;
     }
     SetPin(pinid: number, val: boolean)
@@ -189,7 +219,6 @@ class PIO
         if(this.current_cycle > 0)
             this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle-1n);
         this.pins[pinid].state = val;
-        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
     }
     SetPinDir(pinid: number, isout: boolean)
     {
@@ -237,6 +266,42 @@ class PIO
         }
         Assert(inst! != null && inst! != undefined);
         return inst!;
+    }
+
+    DecodeProgram(data: Int16Array): Instruction[]
+    {
+        let ret = [];
+        for(let it of data)
+        {
+            ret.push(this.DecodeInstruction(it));
+        }
+        return ret;
+    }
+    GetFreeBlockAndMachine(n_inst: number): {found: boolean; block_index: number; machine_index: number, offset: number}
+    {
+        let ret = {found: false, block_index: -1, machine_index: -1, offset: -1};
+        for(let i = 0; i < this.blocks.length; i++)
+        {
+            const it = this.blocks[i];
+            let mach = it.TryGetFreeMachine();
+            if(mach == -1)
+                continue;
+            let off = it.TryAccomodateProgram(n_inst);
+            if(off == -1)
+                continue;
+            ret.found = true;
+            ret.block_index = i;
+            ret.machine_index = mach;
+            ret.offset = off;
+        }
+
+        return ret;
+    }
+    AddProgram(block_index: number, machine_index: number, offset: number, instructions: Instruction[], config: ProgramConfig)
+    {
+        AssertRange(this.blocks, block_index);
+        this.blocks[block_index].AddProgram(machine_index, offset, instructions, config);
+        this.UpdateAllPins();
     }
 
     constructor(pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)

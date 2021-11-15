@@ -13,20 +13,20 @@ abstract class Instruction
         let sideset_opt: boolean = false;
         let sideset: number = 0;
         let delay: number = 0;
-        let sidelen = machine.sideset_n + +machine.sideset_opt_en;
-        if(machine.sideset_n)
+        let sidelen = machine.config.sideset_n + +machine.config.sideset_opt_en;
+        if(machine.config.sideset_n)
         {
-            sideset = BitRange(this.sideset_delay, 12-machine.sideset_n, 12);
-            if(machine.sideset_opt_en)
-                sideset_opt = BitRange(this.sideset_delay, 12-machine.sideset_n-1, 12-machine.sideset_n-1) != 0;
+            sideset = BitRange(this.sideset_delay, 12-machine.config.sideset_n, 12);
+            if(machine.config.sideset_opt_en)
+                sideset_opt = BitRange(this.sideset_delay, 12-machine.config.sideset_n-1, 12-machine.config.sideset_n-1) != 0;
             else 
                 sideset_opt = true;
         }
         if(sidelen < 5)
             delay = BitRange(this.sideset_delay, 8, 12-sidelen);
-        if(machine.sideset_n > 0)
+        if(machine.config.sideset_n > 0)
         {
-            if(!machine.sideset_opt_en || sideset_opt)
+            if(!machine.config.sideset_opt_en || sideset_opt)
                 machine.SetSideset(sideset);
         }
         while(!this.TickFunc(machine))
