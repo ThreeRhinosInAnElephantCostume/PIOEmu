@@ -16,14 +16,14 @@ abstract class Instruction
         let sidelen = machine.config.sideset_n + +machine.config.sideset_opt_en;
         if(machine.config.sideset_n)
         {
-            sideset = BitRange(this.sideset_delay, 12-machine.config.sideset_n, 12);
+            sideset = BitRange(this.sideset_delay, 4-machine.config.sideset_n+(-machine.config.sideset_opt_en)+1, 4+(-machine.config.sideset_opt_en));
             if(machine.config.sideset_opt_en)
-                sideset_opt = BitRange(this.sideset_delay, 12-machine.config.sideset_n-1, 12-machine.config.sideset_n-1) != 0;
+                sideset_opt = BitRange(this.sideset_delay, 4, 4) != 0;
             else 
                 sideset_opt = true;
         }
         if(sidelen < 5)
-            delay = BitRange(this.sideset_delay, 8, 12-sidelen);
+            delay = BitRange(this.sideset_delay, 0, 4-sidelen);
         if(machine.config.sideset_n > 0)
         {
             if(!machine.config.sideset_opt_en || sideset_opt)
@@ -33,7 +33,7 @@ abstract class Instruction
             yield -1;
         for(let i = 0; i < delay; i++)
         {
-            yield i;
+            yield delay-i-1;
         }
         return -2;
     }
@@ -137,7 +137,7 @@ export class MOV extends Instruction
         super(sideset_delay);
         this.setter = 
         {
-            0b000 : (m: Machine, n: number) => m.SetPins(n),    // PINS
+            0b000 : (m: Machine, n: number) => m.SetOutPins(n),    // PINS
             0b001 : (m: Machine, n: number) => m.X = n,         // X
             0b010 : (m: Machine, n: number) => m.Y = n,         // Y
             0b100 : (m: Machine, n: number) => m.EXEC(n),       // EXEC
@@ -164,7 +164,7 @@ export class MOV extends Instruction
         Assert(this.process != undefined);
         this.getter = 
         {
-            0b000 : (m: Machine) => m.GetPins(),                // PINS 
+            0b000 : (m: Machine) => m.GetOutPins(),                // PINS 
             0b001 : (m: Machine) => m.X,                        // X
             0b010 : (m: Machine) => m.Y,                        // Y
             0b011 : (m: Machine) => 0,                          // NULL

@@ -23,8 +23,12 @@ export class ProgramConfig
     sideset_n: number = 0;
     sideset_base: number = 0;
 
-    pins_n: number = 0;
-    pins_base: number = 0;
+    set_pins_n: number = 0;
+    set_pins_base: number = 0;
+    out_pins_n: number = 0;
+    out_pins_base: number = 0;
+    in_pins_n: number = 0;
+    in_pins_base: number = 0;
 
     pindirs_n: number = 0;
     pindirs_base: number = 0;
@@ -63,6 +67,8 @@ export class Waveform
     partial_sample: number = 0;
     partial_counter: number = 0;
 
+    last_sample: number = 0;
+
     private _AddSample(s: number)
     {
         if(this.capacity == this.size)
@@ -72,9 +78,42 @@ export class Waveform
         this.next++;
         this.next %= this.capacity;
     }
+    ReplaceLastSample(s : number)
+    {
+        this.samples[this.prev] = s;
+        if(this.resolution == 1)
+        {
+            if(this.prev != this.next)
+            {
+                this.partial_counter = 0;
+                this.prev--;
+                this.next--;
+                if(this.prev < 0)
+                    this.prev = this.capacity-1;
+                if(this.next < 0)
+                    this.next = this.capacity -1;
+            }
+        }
+        else if(this.partial_counter == 0)
+        {
+            let pprev = this.prev-1;
+            if(pprev == -1)
+                pprev = this.capacity-1;
+            this.samples[pprev] -= this.last_sample/this.resolution;
+            this.samples[pprev] += s/this.resolution;
+        }
+        else
+        {
+            this.partial_sample -= this.last_sample/this.resolution;
+            this.partial_sample += s;
+        }
+        this.last_sample = s;
+
+    }
     AddSample(s: number)
     {
         this.youngest_sample_cycle++;
+        this.last_sample = s;
         if(this.resolution == 1)
         {
             this._AddSample(s);
@@ -135,6 +174,14 @@ export class Waveform
 export class Log
 {
     private pin_waveforms: Waveform[][];
+    ReplaceLastSample(pinid: number, s: number)
+    {
+        let waveforms: Waveform[] = this.pin_waveforms[pinid];
+        for(let it of waveforms)
+        {
+            it.ReplaceLastSample(s);
+        }
+    }
     AddSample(pinid:number, s: number)
     {
         let waveforms: Waveform[] = this.pin_waveforms[pinid];
@@ -183,13 +230,15 @@ class PIO
 
     SimulatePin(pinid: number, state: boolean, cycle: bigint)
     {
-        if(cycle < 0)
-            return;
+        Assert(cycle >= 0);
         const lastupdate = this.log.GetLastSampleCycle(pinid);
+        Assert(cycle >= lastupdate);
         if(cycle == lastupdate)
+        {
+            this.log.ReplaceLastSample(pinid, (state) ? PIN_HIGH : PIN_LOW);
             return;
-        Assert(cycle <= lastupdate);
-        for(let i = 0; i < lastupdate-cycle; i++)
+        }
+        for(let i = 0; i < cycle-lastupdate; i++)
         {
             this.log.AddSample(pinid, (state) ? PIN_HIGH : PIN_LOW); // TODO: simulating pin capacitance
         }
@@ -199,7 +248,7 @@ class PIO
     {
         for(let i = 0; i < this.pins.length; i++)
         {
-            this.SimulatePin(i, this.pins[i].state, this.current_cycle-1n);
+            this.SimulatePin(i, this.pins[i].state, this.current_cycle);
         }
     }
     
@@ -214,7 +263,7 @@ class PIO
     GetPin(pinid: number)
     {
         Assert(pinid >= 0 && pinid < this.pins.length);
-        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle-1n);
+        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
         return this.pins[pinid].state;
     }
     SetPin(pinid: number, val: boolean)
@@ -228,6 +277,7 @@ class PIO
         if(this.current_cycle > 0)
             this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle-1n);
         this.pins[pinid].state = val;
+        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
     }
     SetPinDir(pinid: number, isout: boolean)
     {

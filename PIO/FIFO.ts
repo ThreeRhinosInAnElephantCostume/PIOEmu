@@ -7,7 +7,7 @@ export class FIFO<T>
 
     get empty() 
     {
-        return this.data.length > 0
+        return this.data.length == 0
     };
 
     get full()

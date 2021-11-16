@@ -13,14 +13,16 @@ class Machine
 
     offset!: number;
     position!: number;
+    nextposition!: number
     running!: boolean;
 
-    clkdiv: number = 0;
+    clkdiv: number = 1;
     clk: number = 0;
 
     config!: ProgramConfig;
 
-    curinstgen?: Generator | null;
+    curinstgen: Generator | null = null;
+    nextinstgen: Generator | null = null;
     lastresult?: IteratorResult<unknown, any>;
 
     input_shift_counter: number = 0;
@@ -36,7 +38,7 @@ class Machine
     }
     set X(v: number)
     {
-        this._X = LikeInteger32(this._X);
+        this._X = LikeInteger32(v);
     }
 
     private _Y: number = 0;
@@ -46,7 +48,7 @@ class Machine
     }
     set Y(v: number)
     {
-        this._Y = LikeInteger32(this._Y);
+        this._Y = LikeInteger32(v);
     }
 
     STATUS: number = 0;
@@ -55,7 +57,7 @@ class Machine
     set ISR(v:number)
     {
         this.input_shift_counter = 0;
-        this._ISR = 0;
+        this._ISR = LikeInteger32(v);
     }
     get ISR():number
     {
@@ -66,22 +68,21 @@ class Machine
     set OSR(v:number)
     {
         this.output_shift_counter = 0;
-        this.OSR = 0;
+        this._OSR = LikeInteger32(v);
     }
     get OSR():number
     {
-        return this.OSR;
+        return this._OSR;
     }
 
     set PC(v: number)
     {
-        this.position = v;
-        this.curinstgen = null;
+        this.nextposition = this.offset+v;
     }
 
     get has_program(): boolean
     {
-        return this.config == undefined || this.config == null;
+        return !(this.config == undefined || this.config == null);
     }
 
     GetJumpPin()
@@ -91,42 +92,83 @@ class Machine
 
     EXEC(inst: number)
     {
-        this.LoadInstruction(this.pio.DecodeInstruction(inst));
+        this.nextinstgen = this.LoadInstruction(this.pio.DecodeInstruction(inst));
     }
-    LoadInstruction(inst: ops.Instruction)
+    LoadInstruction(instruction: ops.Instruction)
     {
-        this.curinstgen = inst.Execute(this);   
+        return instruction.Execute(this);
     }
-    SetInstruction(block: Block, position: number)
+    LoadInstructionFromPosition(block: Block, position: number)
     {
-        this.LoadInstruction(block.instructions[position]);
+        console.log(position);
+        return this.LoadInstruction(block.instructions[position]);
     }
     NextInstruction(block: Block)
     {
-        this.position++;
-        if(this.position == this.config.wrap)
-            this.position = this.config.wrap_target;
-        this.SetInstruction(block, this.position);
+        if(this.nextinstgen != null)
+        {
+            this.curinstgen = this.nextinstgen;
+            this.nextinstgen = null;
+            return;
+        }
+        this.position = this.nextposition;
+        this.nextposition++;
+        if(this.nextposition == this.config.wrap)
+            this.nextposition= this.config.wrap_target;
+        if(this.nextposition >= this.config.length)
+            this.nextposition = this.offset;
+        this.curinstgen = this.LoadInstructionFromPosition(block, this.position);
     }
-    GetPins(): number
+    GetInPins(): number
     {
         let n = 0;
-        for(let i = 0; i < this.config.pins_n; i++)
+        for(let i = 0; i < this.config.in_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config.pins_base+i);
+            let v = +this.pio.GetPin(this.config.in_pins_base+i);
             n |= (v << i);
         }
         return n;
     }
-    SetPins(val: number)
+    GetOutPins(): number
     {
-        if(this.config.pins_n == 0)
+        let n = 0;
+        for(let i = 0; i < this.config.set_pins_n; i++)
+        {
+            let v = +this.pio.GetPin(this.config.set_pins_base+i);
+            n |= (v << i);
+        }
+        return n;
+    }
+    GetSetPins(): number
+    {
+        let n = 0;
+        for(let i = 0; i < this.config.out_pins_n; i++)
+        {
+            let v = +this.pio.GetPin(this.config.out_pins_base+i);
+            n |= (v << i);
+        }
+        return n;
+    }
+    SetOutPins(val: number)
+    {
+        if(this.config.out_pins_n == 0)
         {
             this.pio.LogWarning("Attempting to set pins even though none are assigned. Did you forget to assign them?");
         }
-        for(let i = 0; i < this.config.pins_n; i++)
+        for(let i = 0; i < this.config.out_pins_n; i++)
         {
-            this.pio.SetPin(this.config.pins_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config.out_pins_base+i, !!(val & (1 << i)));
+        }
+    }
+    SetSetPins(val: number)
+    {
+        if(this.config.set_pins_n == 0)
+        {
+            this.pio.LogWarning("Attempting to set pins even though none are assigned. Did you forget to assign them?");
+        }
+        for(let i = 0; i < this.config.set_pins_n; i++)
+        {
+            this.pio.SetPin(this.config.set_pins_base+i, !!(val & (1 << i)));
         }
     }
     SetSideset(val: number)
@@ -157,7 +199,7 @@ class Machine
     private Tick(block: Block)
     {
         if(this.curinstgen == null)
-            this.SetInstruction(block, this.position);
+            this.NextInstruction(block);    
         this.lastresult = this.curinstgen?.next();
         if(this.lastresult?.done)
         {
@@ -191,6 +233,7 @@ class Machine
     {
         this.offset = offset;
         this.position = offset;
+        this.nextposition = offset;
         this.config = config;
         this.RX_FIFO.Clear();
         this.TX_FIFO.Clear();

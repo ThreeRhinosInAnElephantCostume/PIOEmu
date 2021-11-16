@@ -30,7 +30,7 @@ export function BitRange(n: number, low: number, high: number, reverse = false)
     high++;
     for(let i = 0; i < (high-low); i++)
     {
-        r |= (n & (1 << (low+i)));
+        r |= (+!!(n & (1 << (low+i))) << i);
     }
     if(reverse)
         r = BitReverse(r, (high-low));

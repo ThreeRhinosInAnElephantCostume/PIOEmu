@@ -31,7 +31,7 @@ class Block
         let i = 0;
         for(let it of this.instruction_map)
         {
-            if(it)
+            if(!it)
             {
                 if(conse == 0)
                     start = i;
