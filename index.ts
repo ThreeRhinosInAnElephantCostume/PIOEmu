@@ -7,7 +7,7 @@ console.log("123");
 
 let pio = new PIO();
 
-let buf = fs.readFileSync("temp/pwm", "utf-8");
+let buf = fs.readFileSync("examples/pwm", "utf-8");
 
 let dt: Uint16Array = new Uint16Array(buf.length/4);
 
