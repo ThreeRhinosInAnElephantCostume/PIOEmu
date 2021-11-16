@@ -1,0 +1,34 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700");
+@import url("https://fonts.googleapis.com/css?family=Roboto+Mono");
+
+html,
+body {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  font-family: "Roboto Mono", sans-serif;
+}
+
+#navbar {
+  flex-direction: column;
+}
+
+button {
+  border-style: none;
+  color: white;
+  background: #3f4c5c;
+  padding: 0.5em;
+  font-weight: bold;
+  margin: 2em;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #3f4c5c;
+  font-weight: 400;
+}
