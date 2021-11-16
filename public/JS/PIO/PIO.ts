@@ -1,9 +1,9 @@
 export {PIO};
 
-import { Machine } from "./machine";
-import { Block } from "./block";
-import { Instruction, JMP, MOV, PULL } from "./instructions";
-import { Assert, AssertRange, BitRange } from "../utils";
+import { Machine } from "./machine.js";
+import { Block } from "./block.js";
+import { Instruction, JMP, MOV, PULL } from "./instructions.js";
+import { Assert, AssertRange, BitRange } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
@@ -228,6 +228,8 @@ class PIO
 
     log: Log = new Log();
 
+    on_clock_end: (pio: PIO) => void = (pio: PIO) => {};
+
     SimulatePin(pinid: number, state: boolean, cycle: bigint)
     {
         Assert(cycle >= 0);
@@ -303,6 +305,7 @@ class PIO
             this.current_cycle = startcycle + BigInt(nstep);
             n -= nstep;
         }
+        this.on_clock_end(this);
     }
 
     DecodeInstruction(dt: number): Instruction
@@ -355,6 +358,11 @@ class PIO
         }
 
         return ret;
+    }
+    RemoveProgram(block_index: number, machine_index: number)
+    {
+        AssertRange(this.blocks, block_index);
+        this.blocks[block_index].RemoveProgram(machine_index);
     }
     AddProgram(block_index: number, machine_index: number, offset: number, config: ProgramConfig)
     {

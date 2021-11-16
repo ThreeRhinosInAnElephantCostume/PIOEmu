@@ -1,11 +1,11 @@
 {
     "compilerOptions": 
     {
-        "module": "esnext",
+        "module": "nodenext",
         "moduleResolution": "node",
         "target": "esnext",
         "jsx": "preserve",
-        "outDir": "build",
+        "outDir": "_build",
         "strictFunctionTypes": true,
         "sourceMap": true,
         "strict": true,   
@@ -13,11 +13,11 @@
     },
     "exclude": 
     [
-        "./server/*",
-        "./server",
-        "./server/**",
-        "**/server/*",
-        "../server/*",
+        "./public/*",
+        "./public",
+        "./public/**",
+        "**/public/*",
+        "../public/*",
         "node_modules",
         "**/node_modules/*",
         "../node_modules",
@@ -25,7 +25,7 @@
     ],
     "include": 
     [
-        "./public/",
-        "./public/*",
+        "./server/",
+        "./server/*",
     ]
 }

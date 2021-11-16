@@ -1,10 +1,10 @@
 export {Block};
 
-import { PIO, ProgramConfig } from "./PIO";
-import { Machine } from "./machine";
-import { Instruction }  from "./instructions";
-import * as ops  from "./instructions";
-import { Assert } from "../utils";
+import { PIO, ProgramConfig } from "./PIO.js";
+import { Machine } from "./machine.js";
+import { Instruction }  from "./instructions.js";
+import * as ops  from "./instructions.js";
+import { Assert, AssertRange } from "../utils.js";
 
 class Block
 {
@@ -47,9 +47,20 @@ class Block
     }
     AddProgram(machine_index: number, offset: number, config: ProgramConfig)
     {
+        AssertRange(this.machines, machine_index);
         Assert(!this.machines[machine_index].has_program);
         this.AddInstructions(offset, config.instructions);
         this.machines[machine_index].SetProgram(config, offset);
+    }
+    RemoveProgram(machine_index: number)
+    {
+        AssertRange(this.machines, machine_index);
+        let m = this.machines[machine_index];
+        for(let i = m.offset; i < m.config.length; i++)
+        {
+            this.instruction_map[i] = false;
+        }
+        m.RemoveProgram();
     }
     AddInstructions(offset: number, new_instructions: Instruction[])
     {

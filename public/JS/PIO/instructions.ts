@@ -1,8 +1,8 @@
 export { Instruction }
 
-import { Assert, BitRange } from "../utils";
-import { Block } from "./block";
-import { Machine } from "./machine";
+import { Assert, BitRange } from "../utils.js";
+import { Block } from "./block.js";
+import { Machine } from "./machine.js";
 
 abstract class Instruction
 {

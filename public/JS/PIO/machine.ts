@@ -1,10 +1,10 @@
 export {Machine};
 
-import { PIO, ProgramConfig } from "./PIO";
-import { Block } from "./block";
-import * as ops  from "./instructions";
-import { FIFO } from "./FIFO";
-import { Assert, LikeInteger32 } from "../utils";
+import { PIO, ProgramConfig } from "./PIO.js";
+import { Block } from "./block.js";
+import * as ops  from "./instructions.js";
+import { FIFO } from "./FIFO.js";
+import { Assert, LikeInteger32 } from "../utils.js";
 
 class Machine
 {
@@ -241,6 +241,13 @@ class Machine
         this.lastresult = undefined;
         this.input_shift_counter = 0;
         this.output_shift_counter = 0;
+    }
+    RemoveProgram()
+    {
+        this.offset = -1;
+        this.position = -1;
+        this.config = null!;
+        this.running = false;
     }
     constructor(pio: PIO)
     {

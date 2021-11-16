@@ -1,4 +1,4 @@
-import { Assert } from "../utils";
+import { Assert } from "../utils.js";
 
 export class FIFO<T>
 {
