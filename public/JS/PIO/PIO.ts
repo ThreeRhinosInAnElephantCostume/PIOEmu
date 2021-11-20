@@ -3,7 +3,7 @@ export {PIO};
 import { Machine } from "./machine.js";
 import { Block } from "./block.js";
 import { Instruction, JMP, MOV, PULL } from "./instructions.js";
-import { Assert, AssertRange, BitRange } from "../utils.js";
+import { Assert, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
@@ -46,8 +46,13 @@ export class ProgramConfig
 
 export class Pin
 {
+    index: number;
     isout: boolean = false;
     state: boolean = false;
+    constructor (index: number)
+    {
+        this.index = index;
+    }
 }
 export class Waveform
 {
@@ -283,8 +288,16 @@ class PIO
     }
     SetPinDir(pinid: number, isout: boolean)
     {
-        Assert(pinid >= 0 && pinid < this.pins.length);
+        AssertRange(this.pins, pinid);
         this.pins[pinid].isout = isout;
+    }
+    SetPinDirs(pin_base: number, n: number, isout: boolean)
+    {
+        Assert(n > 0);
+        for(let i =0 ; i < n; i++)
+        {
+            this.SetPinDir(i+pin_base, isout);
+        }
     }
 
     Clock(n: number)
@@ -374,17 +387,13 @@ class PIO
     {
         this.blocks[block_index].machines[machine_index].running = true;
     }
-    PushData(block_index: number, machine_index: number, dt: number) // TODO: program interface
-    {
-        this.blocks[block_index].machines[machine_index].TX_FIFO.Push(dt);
-    }
 
     constructor(pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
     {
         this.pins = [];
         for(let i = 0; i < pins_n; i++)
         {
-            this.pins.push(new Pin());
+            this.pins.push(new Pin(i));
         }
         this.blocks = [];
         for(let i = 0; i < block_n; i++)

@@ -9,6 +9,8 @@
         "strictFunctionTypes": true,
         "sourceMap": true,
         "strict": true,   
+        "noImplicitAny": true,
+        "strictPropertyInitialization": true,
         "esModuleInterop": true,
     },
     "exclude": 
