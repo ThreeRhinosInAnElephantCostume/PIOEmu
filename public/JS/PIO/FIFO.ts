@@ -49,6 +49,7 @@ export class FIFO<T>
 
     constructor(size: number)
     {
+        Assert(size >= 0); // size == 0 is an actual use case.
         this._size = size;
     }
 }

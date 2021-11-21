@@ -4,12 +4,13 @@ import { Machine } from "./machine.js";
 import { Block } from "./block.js";
 import { Instruction, MOV, JMP, PULL } from "./instructions/instructions.js";
 
-import { Assert, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
+import { Assert, AssertInteger32, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
 export const PIN_HIGH = 3.3;
 export const PIN_LOW = 0;
+
 
 export class ProgramConfig
 {
@@ -24,6 +25,9 @@ export class ProgramConfig
     sideset_n: number = 0;
     sideset_base: number = 0;
 
+    in_shiftdir: ShiftDir = ShiftDir.DEFAULT;
+    out_shiftdir: ShiftDir = ShiftDir.DEFAULT;
+
     set_pins_n: number = 0;
     set_pins_base: number = 0;
     out_pins_n: number = 0;
@@ -35,6 +39,14 @@ export class ProgramConfig
     pindirs_base: number = 0;
 
     jmp_pin: number = -1;
+
+    autopull: boolean = false;
+    autopull_threshold: number = 0;
+    autopush: boolean = false;
+    autopush_threshold: number = 0;
+
+    f_join_into_rx: boolean = false;
+    f_join_into_tx: boolean = false;
 
     constructor(instructions: Instruction[])
     {
@@ -404,7 +416,6 @@ class PIO
         {
             this.blocks.push(new Block(this, machines_per_block, instructions_per_machine));
         }
-
     }
 
 }

@@ -4,7 +4,7 @@ import { PIO, ProgramConfig } from "./PIO.js";
 import { Block } from "./block.js";
 import * as ops  from "./instructions/instructions.js";
 import { FIFO } from "./FIFO.js";
-import { Assert, LikeInteger32 } from "../utils.js";
+import { Assert, LikeInteger32, Mod } from "../utils.js";
 
 class Machine
 {
@@ -25,8 +25,38 @@ class Machine
     nextinstgen: Generator | null = null;
     lastresult?: IteratorResult<unknown, any>;
 
-    input_shift_counter: number = 0;
-    output_shift_counter: number = 0;
+    private _input_shift_counter: number = 0;
+    input_shift_flag: boolean = false;
+    get input_shift_counter()
+    {
+        return this._input_shift_counter;
+    }
+    set input_shift_counter(n: number)
+    {
+        if(this.config.autopull && n >= this.config.autopush_threshold)
+        {
+            this.input_shift_flag = true;
+            this._input_shift_counter = 0;
+        }
+        else
+            this._input_shift_counter = Math.min(32, n); // Seems to be how the documentation says it works?
+    }
+    private _output_shift_counter: number = 32;
+    output_shift_flag: boolean = false;
+    get output_shift_counter()
+    {
+        return this._output_shift_counter;
+    }
+    set output_shift_counter(n: number)
+    {
+        if(this.config.autopull && n >= this.config.autopull_threshold)
+        {
+            this.output_shift_flag = true;
+            this._output_shift_counter = 0;
+        }
+        else 
+            this._output_shift_counter = Math.min(32, n); // Seems to be how the documentation says it works?
+    }
 
     RX_FIFO = new FIFO<number>(4);
     TX_FIFO = new FIFO<number>(4);
@@ -80,6 +110,68 @@ class Machine
         this.nextposition = this.offset+v;
     }
 
+    private ZeroShiftCounters()
+    {
+        this.input_shift_counter = 0;
+        this.output_shift_counter = 0;
+    }
+
+    private UpdateFIFOs()
+    {
+        const rxj = this.config.f_join_into_rx;
+        const txj = this.config.f_join_into_tx;
+        Assert(!(rxj && txj), "Invalid fifo configuration");
+        if(rxj)
+        {
+            this.RX_FIFO = new FIFO<number>(8);
+            this.TX_FIFO = new FIFO<number>(0);
+        }
+        else if(txj)
+        {
+            this.RX_FIFO = new FIFO<number>(0);
+            this.TX_FIFO = new FIFO<number>(8);
+        }
+        else
+        {
+            this.RX_FIFO = new FIFO<number>(4);
+            this.TX_FIFO = new FIFO<number>(4);
+        }
+        this.ZeroShiftCounters();
+    }
+
+    get f_join_into_rx()
+    {
+        return this.config.f_join_into_rx;
+    }
+    set f_join_into_rx(b: boolean)
+    {
+        if(this.config.f_join_into_rx == b)
+            return;
+        this.config.f_join_into_rx = b;
+        if(b)
+        {
+            if(this.config.f_join_into_tx)
+                this.config.f_join_into_tx = false;
+        }
+        this.UpdateFIFOs();
+    }
+    get f_join_into_tx()
+    {
+        return this.config.f_join_into_tx;
+    }
+    set f_join_into_tx(b: boolean)
+    {
+        if(this.config.f_join_into_tx == b)
+            return;
+        this.config.f_join_into_tx = b;
+        if(b)
+        {
+            if(this.config.f_join_into_rx)
+                this.config.f_join_into_rx = false;
+        }
+        this.UpdateFIFOs();
+    }
+    
     get has_program(): boolean
     {
         return !(this.config == undefined || this.config == null);
@@ -228,18 +320,25 @@ class Machine
         }
         return ts;
     }
-    SetProgram(config: ProgramConfig, offset: number)
+    Reset()
     {
-        this.offset = offset;
-        this.position = offset;
-        this.nextposition = offset;
-        this.config = config;
+        this.position = this.offset;
+        this.nextposition = this.offset;
         this.RX_FIFO.Clear();
         this.TX_FIFO.Clear();
         this.curinstgen = null;
         this.lastresult = undefined;
+        this.ZeroShiftCounters();
+        this.UpdateFIFOs();
         this.input_shift_counter = 0;
-        this.output_shift_counter = 0;
+        this.output_shift_counter = 32;
+
+    }
+    SetProgram(config: ProgramConfig, offset: number)
+    {
+        this.offset = offset;
+        this.Reset();
+        this.config = config;
     }
     RemoveProgram()
     {

@@ -1,4 +1,4 @@
-import { Assert, BitRange } from "../../utils.js";
+import { Assert, AssertBits, BitRange } from "../../utils.js";
 import { Block } from "../block.js";
 import { Machine } from "../machine.js";
 import { Instruction } from "./instructions.js";
@@ -18,6 +18,8 @@ export class JMP extends Instruction
     constructor(condition: number, address:number, sideset_delay: number)
     {
         super(sideset_delay);
+        AssertBits(condition, 3);
+        AssertBits(address, 5);
         this.condition = 
         {
             0b000 : (m: Machine) => true,           // none (always jump)

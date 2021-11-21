@@ -1,3 +1,4 @@
+import { BitwiseOperator } from "typescript";
 
 export function Assert(b: boolean, msg: string="Unspecified assertion")
 {
@@ -7,6 +8,20 @@ export function Assert(b: boolean, msg: string="Unspecified assertion")
 export function AssertRange(arr: any[], indx: number)
 {
     Assert(indx >= 0 && indx < arr.length, "Index out of range!");
+}
+export function AssertInteger32(n: number, msg: string="The number does not represent a possible 32-bit unsigned integer")
+{
+    Assert(n >= 0 && n <= REG32_MAX, msg);
+    Assert(Math.round(n) == n, msg);
+}
+export function AssertBits(n: number, bits: number, msg?: string)
+{
+    if(msg == null)
+    {
+        msg = "Not a valid " + bits + " bit unsigned integer";
+    }
+    AssertInteger32(n, msg);
+    Assert(n < (1 << n), msg);
 }
 export function BitReverse(n: number, nbits: number=32)
 {
@@ -40,10 +55,10 @@ export function Mod(n: number, m: number): number
 {
     return ((n % m) + m) % m;
 }
-const REG32_MAX = Math.pow(2, 32)-1;
+export const REG32_MAX = Math.pow(2, 32)-1;
 export function LikeInteger32(n: number): number
 {
-    return Mod(n, REG32_MAX);
+    return Mod(n, REG32_MAX+1);
 }
 export function msleep(n: number) 
 {
@@ -52,4 +67,29 @@ export function msleep(n: number)
 export function sleep(n: number) 
 {
     msleep(n*1000);
+}
+export enum ShiftDir
+{
+    LEFT=0,
+    RIGHT=1, 
+    DEFAULT=1,
+}
+
+export function ShiftInDir(v: number, n: number, dir: ShiftDir): number
+{
+    AssertInteger32(v);
+    if(dir == ShiftDir.RIGHT)
+        return v >> n;
+    return LikeInteger32(v << n);
+}
+export function BitsFromDir(v: number, n: number, dir: ShiftDir): number
+{
+    AssertInteger32(v);
+    if(dir == ShiftDir.RIGHT)
+        return BitRange(v, 0, n-1);
+    return BitRange(v, (31-n)+1,31);
+}
+export function ShiftIntoFromDir(initial: number, toinsert: number, toshift: number, dir: ShiftDir): number
+{
+    return ShiftInDir(initial, toshift, dir) | BitsFromDir(toinsert, toshift, dir);
 }

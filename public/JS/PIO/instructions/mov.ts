@@ -1,20 +1,13 @@
 import { Instruction } from "./instructions";
-import { Assert, BitRange } from "../../utils.js";
+import { Assert, AssertBits, BitRange } from "../../utils.js";
 import { Block } from "../block.js";
 import { Machine } from "../machine.js";
 
-enum MOV_OP
-{
-    NONE=0b00,
-    INVERT=0b01,
-    BIT_REVERSE=0b10,
-} 
-
 export class MOV extends Instruction
 {
-    getter?: (m:Machine) => number;
-    process?: (m:Machine, n:number) => number;
-    setter?: (m:Machine, n:number) => void;
+    getter: (m:Machine) => number;
+    process: (m:Machine, n:number) => number;
+    setter: (m:Machine, n:number) => void;
     protected TickFunc(machine: Machine): boolean
     {
         this.setter!(machine, this.process!(machine, this.getter!(machine)));
@@ -27,9 +20,12 @@ export class MOV extends Instruction
     constructor(destination: number, op: number, source: number, sideset_delay: number)
     {
         super(sideset_delay);
+        AssertBits(destination, 3);
+        AssertBits(op, 2);
+        AssertBits(source, 3);
         this.setter = 
         {
-            0b000 : (m: Machine, n: number) => m.SetOutPins(n),    // PINS
+            0b000 : (m: Machine, n: number) => m.SetOutPins(n), // PINS
             0b001 : (m: Machine, n: number) => m.X = n,         // X
             0b010 : (m: Machine, n: number) => m.Y = n,         // Y
             0b100 : (m: Machine, n: number) => m.EXEC(n),       // EXEC
@@ -37,7 +33,7 @@ export class MOV extends Instruction
             0b110 : (m: Machine, n: number) => m.ISR = n,       // ISR
             0b111 : (m: Machine, n: number) => m.OSR = n,       // OSR
 
-        }[destination];
+        }[destination]!;
         Assert(this.setter != undefined);
         this.process = 
         {
@@ -52,11 +48,11 @@ export class MOV extends Instruction
                 }
                 return rn;
             }
-        }[op];
+        }[op]!;
         Assert(this.process != undefined);
         this.getter = 
         {
-            0b000 : (m: Machine) => m.GetOutPins(),                // PINS 
+            0b000 : (m: Machine) => m.GetOutPins(),             // PINS 
             0b001 : (m: Machine) => m.X,                        // X
             0b010 : (m: Machine) => m.Y,                        // Y
             0b011 : (m: Machine) => 0,                          // NULL
@@ -64,7 +60,7 @@ export class MOV extends Instruction
             0b110 : (m: Machine) => m.ISR,                      // ISR
             0b111 : (m: Machine) => m.OSR,                      // OSR
 
-        }[source];
+        }[source]!;
         Assert(this.getter != undefined);
     }
 }
