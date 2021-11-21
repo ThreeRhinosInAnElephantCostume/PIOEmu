@@ -1,7 +1,7 @@
 import { Pin, PIO, ProgramConfig } from "./PIO.js";
 import { Machine } from "./machine.js";
 import { Block } from "./block.js";
-import { Instruction, JMP, MOV, PULL } from "./instructions.js";
+import { Instruction, JMP, MOV, PULL } from "./instructions/instructions.js";
 import { Assert, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
 import { ConfigFileDiagnosticsReporter, isPrefixUnaryExpression, Program } from "typescript";
 import { pio } from "../globals.js";
@@ -228,6 +228,10 @@ export class PIOAPI
     private _pio: PIO;
     private programs: PIOProgram[] = []
     private programs_by_name: Map<string, PIOProgram> = new Map()
+    get cycle()
+    {
+        return this._pio.current_cycle;
+    }
     AddProgram(name:string, prog: PIOProgram, auto_load:boolean, start:boolean)
     {
         Assert(!start || auto_load, "Cannot start a program without loading it");

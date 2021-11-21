@@ -2,7 +2,8 @@ export {PIO};
 
 import { Machine } from "./machine.js";
 import { Block } from "./block.js";
-import { Instruction, JMP, MOV, PULL } from "./instructions.js";
+import { Instruction, MOV, JMP, PULL } from "./instructions/instructions.js";
+
 import { Assert, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;

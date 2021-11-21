@@ -2,7 +2,7 @@ export {Machine};
 
 import { PIO, ProgramConfig } from "./PIO.js";
 import { Block } from "./block.js";
-import * as ops  from "./instructions.js";
+import * as ops  from "./instructions/instructions.js";
 import { FIFO } from "./FIFO.js";
 import { Assert, LikeInteger32 } from "../utils.js";
 

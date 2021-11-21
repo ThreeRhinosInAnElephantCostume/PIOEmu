@@ -2,8 +2,8 @@ export {Block};
 
 import { PIO, ProgramConfig } from "./PIO.js";
 import { Machine } from "./machine.js";
-import { Instruction }  from "./instructions.js";
-import * as ops  from "./instructions.js";
+import { Instruction }  from "./instructions/instructions.js";
+import * as ops  from "./instructions/instructions.js";
 import { Assert, AssertRange } from "../utils.js";
 
 class Block
