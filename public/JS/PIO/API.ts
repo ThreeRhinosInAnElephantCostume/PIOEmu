@@ -96,7 +96,7 @@ export class PIOProgram
         this._config.sideset_base = pin_base;
         this._config.sideset_n= n;
     }
-    get clock_divder()
+    get clock_divider()
     {
         return this.machine.clkdiv;
     }
@@ -282,6 +282,30 @@ export class PIOAPI
     SetPinDir(indx: number, isout: boolean)
     {
         this._pio.SetPinDir(indx, isout);
+    }
+    µsToCycles(µs: number): number
+    {
+        return (this._pio.frequency*(µs/1000/100));
+    }
+    CyclesToµs(n: number): number
+    {
+        return (n / this._pio.frequency)*1000*1000;
+    }
+    Advanceµs(µs: number): number
+    {
+        let c = this.µsToCycles(µs);
+        c = Math.max(c, 1);
+        this.AdvanceCycles(c);
+        return this.CyclesToµs(c);
+    }
+    Advancems(ms: number): number
+    {
+        return this.Advanceµs(ms*1000)/1000;
+    }
+    AdvanceCycles(n: number)
+    {
+        Assert(n > 0);
+        this._pio.Clock(n);
     }
     constructor(pio: PIO)
     {

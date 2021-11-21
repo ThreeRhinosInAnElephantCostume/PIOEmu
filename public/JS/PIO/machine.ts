@@ -100,7 +100,6 @@ class Machine
     }
     LoadInstructionFromPosition(block: Block, position: number)
     {
-        console.log(position);
         return this.LoadInstruction(block.instructions[position]);
     }
     NextInstruction(block: Block)

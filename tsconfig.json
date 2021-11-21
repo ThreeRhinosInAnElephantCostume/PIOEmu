@@ -1,7 +1,7 @@
 {
     "compilerOptions": 
     {
-        "module": "esnext",
+        "module": "CommonJS",
         "moduleResolution": "node",
         "target": "esnext",
         "jsx": "preserve",
@@ -15,19 +15,9 @@
     },
     "exclude": 
     [
-        "./server/*",
-        "./server",
-        "./server/**",
-        "**/server/*",
-        "../server/*",
         "node_modules",
         "**/node_modules/*",
         "../node_modules",
         "../**/node_modules/*",
     ],
-    "include": 
-    [
-        "./public/",
-        "./public/*",
-    ]
 }

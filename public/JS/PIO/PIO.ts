@@ -231,6 +231,8 @@ class PIO
     blocks: Block[];
     current_cycle: bigint = 0n;
 
+    frequency: number;
+
     log: Log = new Log();
 
     on_clock_end: (pio: PIO) => void = (pio: PIO) => {};
@@ -388,8 +390,9 @@ class PIO
         this.blocks[block_index].machines[machine_index].running = true;
     }
 
-    constructor(pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
+    constructor(frequency:number = 133*1000*1000, pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
     {
+        this.frequency = frequency;
         this.pins = [];
         for(let i = 0; i < pins_n; i++)
         {
