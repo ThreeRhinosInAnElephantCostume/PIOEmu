@@ -79,7 +79,7 @@ class Block
         this.machines = [];
         for(let i = 0 ; i < machines_n; i++)
         {
-            this.machines.push(new Machine(pio));
+            this.machines.push(new Machine(pio, i));
         }
         this.instructions = [];
         this.instruction_map = [];

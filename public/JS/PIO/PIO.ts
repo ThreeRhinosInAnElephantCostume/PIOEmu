@@ -2,9 +2,9 @@ export {PIO};
 
 import { Machine } from "./machine.js";
 import { Block } from "./block.js";
-import { Instruction, MOV, JMP, PULL } from "./instructions/instructions.js";
+import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET } from "./instructions/instructions.js";
 
-import { Assert, AssertInteger32, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
+import { Assert, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
@@ -248,6 +248,8 @@ class PIO
 
     log: Log = new Log();
 
+    irq_vector: boolean[];
+
     on_clock_end: (pio: PIO) => void = (pio: PIO) => {};
 
     SimulatePin(pinid: number, state: boolean, cycle: bigint)
@@ -340,21 +342,39 @@ class PIO
     {
         let inst: Instruction;
         const ident = BitRange(dt, 13, 15); 
-        const ds = BitRange(dt, 8, 12);
+        const sd = BitRange(dt, 8, 12);
         switch(ident)
         {
             case 0b000:
-                inst = new JMP(BitRange(dt, 5, 7), BitRange(dt, 0, 4), ds);
+                inst = new JMP(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd);
+                break;
+            case 0b001:
+                inst = new WAIT(!!BitRange(dt, 7, 7), BitRange(dt, 5, 6), BitRange(dt, 0, 4), sd);
+                break;
+            case 0b010:
+                inst = new IN(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd)
+                break;
+            case 0b011:
+                inst = new OUT(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd);
                 break;
             case 0b100:
                 if(BitRange(dt, 7, 7))
-                    inst = new PULL(BitRange(dt, 5, 5) > 0, BitRange(dt, 6, 6) > 0, ds);
+                    inst = new PULL(!!BitRange(dt, 5, 5), !!BitRange(dt, 6, 6), sd);
+                else
+                    inst = new PUSH(!!BitRange(dt, 5, 5), !!BitRange(dt, 6, 6), sd);
                 break;
             case 0b101:
-                inst = new MOV(BitRange(dt, 5, 7), BitRange(dt, 3, 4), BitRange(dt, 0, 2), ds);
+                inst = new MOV(BitRange(dt, 5, 7), BitRange(dt, 3, 4), BitRange(dt, 0, 2), sd);
+                break;
+            case 0b110:
+                if(!BitRange(dt, 7, 7))
+                    inst = new IRQ(!!BitRange(dt, 6, 6), !!BitRange(dt, 5, 5), BitRange(dt, 0, 4), sd);
+                break;
+            case 0b111:
+                inst = new SET(BitRange(sd, 5, 7), BitRange(sd, 0, 4), sd);
                 break;
         }
-        Assert(inst! != null && inst! != undefined);
+        Assert(inst! != null && inst! != undefined, "Invalid instruction!");
         return inst!;
     }
 
@@ -402,6 +422,27 @@ class PIO
     {
         this.blocks[block_index].machines[machine_index].running = true;
     }
+    SetIRQ(address: number, val: boolean): boolean // TODO: attaching interrupts
+    {
+        AssertRange(this.irq_vector, address);
+        if(this.irq_vector[address] == val) 
+            return false;
+        this.irq_vector[address] = val; // TODO: attaching interrupts
+        return true;
+    }
+    ClearIRQ(address: number): boolean
+    {
+        return this.SetIRQ(address, false);
+    }
+    RaiseIRQ(address: number): boolean
+    {
+        return this.SetIRQ(address, true);
+    }
+    GetIRQ(address: number): boolean
+    {
+        AssertRange(this.irq_vector, address);
+        return this.irq_vector[address];
+    }
 
     constructor(frequency:number = 133*1000*1000, pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
     {
@@ -415,6 +456,11 @@ class PIO
         for(let i = 0; i < block_n; i++)
         {
             this.blocks.push(new Block(this, machines_per_block, instructions_per_machine));
+        }
+        this.irq_vector = [];
+        for(let i = 0; i < 7; i++)
+        {
+            this.irq_vector.push(false);
         }
     }
 

@@ -1,22 +1,24 @@
+import { pio } from "../../globals.js";
 import { Assert, AssertBits, BitRange } from "../../utils.js";
 import { Block } from "../block.js";
 import { Machine } from "../machine.js";
 
 export { JMP } from "./jmp";
-//export { WAIT } from "./wait";
+export { WAIT } from "./wait";
 export { IN } from "./in";
-//export { OUT } from "./out";
-//export { PUSH } from "./push";
+export { OUT } from "./out";
+export { PUSH } from "./push";
 export { PULL } from "./pull";
 export { MOV } from "./mov";
-//export { IRQ } from "./irq";
-//export { SET } from "./set";
+export { IRQ } from "./irq";
+export { SET } from "./set";
 export { NOP } from "./nop";
 
 export const INST_DONE = -1;
 export const INST_STALL_INTERNAL = -2;
 export const INST_STALL_AUTOPUSH = -3;
 export const INST_STALL_AUTOPULL = -4;
+export const INST_STALL_IRQ = -5;
 
 export abstract class Instruction
 {
@@ -46,7 +48,7 @@ export abstract class Instruction
                 machine.SetSideset(sideset);
         }
         while(!this.TickFunc(machine))
-            yield INST_STALL_INTERNAL;
+            yield (machine.wait_on_irq_flag) ? INST_STALL_IRQ : INST_STALL_INTERNAL;
         while(machine.output_shift_flag)
         {
             if(machine.TX_FIFO.empty)

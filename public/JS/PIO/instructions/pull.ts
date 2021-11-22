@@ -9,6 +9,8 @@ export class PULL extends Instruction
     if_empty: boolean;
     protected TickFunc(machine: Machine): boolean
     {
+        if(this.if_empty && machine.output_shift_counter < machine.config.autopull_threshold)
+            return true;
         if(machine.TX_FIFO.empty)
         {
             if(this.block)
@@ -19,6 +21,7 @@ export class PULL extends Instruction
         {
             machine.OSR = machine.TX_FIFO.Pop();
         }
+        machine.output_shift_counter = 0;
         return true;
     }
     constructor(block: boolean, if_empty: boolean, sideset_delay: number)

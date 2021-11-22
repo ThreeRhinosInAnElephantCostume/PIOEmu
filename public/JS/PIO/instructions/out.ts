@@ -7,12 +7,15 @@ export class OUT extends Instruction
 {
     setter: (m:Machine, v: number) => void;
     bitcount: number;
+    increment_isr: boolean;
     protected TickFunc(machine: Machine): boolean
     {
         let v = BitsFromDir(machine.OSR, this.bitcount, machine.config.out_shiftdir);
         machine.OSR = ShiftInDir(machine.OSR, this.bitcount, machine.config.out_shiftdir);
         machine.output_shift_counter += this.bitcount;
         this.setter(machine, v);
+        if(this.increment_isr)
+            machine.input_shift_counter += this.bitcount;
         return true;
     }
     constructor(destination: number, bitcount: number, sideset_delay: number)
@@ -33,5 +36,6 @@ export class OUT extends Instruction
 
         }[destination]!;
         this.bitcount = (bitcount == 0) ? 32 : bitcount;
+        this.increment_isr = destination == 0b110;
     }
 }

@@ -8,8 +8,8 @@ import { Assert, LikeInteger32, Mod } from "../utils.js";
 
 class Machine
 {
-
     pio: PIO;
+    index: number;
 
     offset!: number;
     position!: number;
@@ -60,6 +60,8 @@ class Machine
 
     RX_FIFO = new FIFO<number>(4);
     TX_FIFO = new FIFO<number>(4);
+
+    wait_on_irq_flag: boolean = false;
 
     private _X: number = 0;
     get X()
@@ -114,6 +116,11 @@ class Machine
     {
         this.input_shift_counter = 0;
         this.output_shift_counter = 0;
+    }
+    private ResetInstructionState() // Intended mostly for forced instruction changes (EXEC, PC=x, etc)
+    {
+        this.input_shift_flag = false;
+        this.output_shift_flag = false;
     }
 
     private UpdateFIFOs()
@@ -196,6 +203,7 @@ class Machine
     }
     NextInstruction(block: Block)
     {
+        this.ResetInstructionState();
         if(this.nextinstgen != null)
         {
             this.curinstgen = this.nextinstgen;
@@ -347,8 +355,10 @@ class Machine
         this.config = null!;
         this.running = false;
     }
-    constructor(pio: PIO)
+    constructor(pio: PIO, index: number)
     {
+        Assert(index >= 0);
         this.pio = pio;
+        this.index = index;
     }
 }

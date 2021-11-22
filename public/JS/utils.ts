@@ -5,9 +5,9 @@ export function Assert(b: boolean, msg: string="Unspecified assertion")
     if(!b)
         throw msg;
 }
-export function AssertRange(arr: any[], indx: number)
+export function AssertRange(arr: any[], indx: number, msg: string = "Index out of range!")
 {
-    Assert(indx >= 0 && indx < arr.length, "Index out of range!");
+    Assert(indx >= 0 && indx < arr.length, msg);
 }
 export function AssertInteger32(n: number, msg: string="The number does not represent a possible 32-bit unsigned integer")
 {
