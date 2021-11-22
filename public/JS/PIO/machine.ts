@@ -121,6 +121,7 @@ class Machine
     {
         this.input_shift_flag = false;
         this.output_shift_flag = false;
+        this.wait_on_irq_flag = false;
     }
 
     private UpdateFIFOs()

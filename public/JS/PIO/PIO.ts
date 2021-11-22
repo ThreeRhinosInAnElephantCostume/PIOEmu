@@ -2,9 +2,9 @@ export {PIO};
 
 import { Machine } from "./machine.js";
 import { Block } from "./block.js";
-import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET } from "./instructions/instructions.js";
+import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET, NOP } from "./instructions/instructions.js";
 
-import { Assert, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "../utils.js";
+import { Assert, AssertBits, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "../utils.js";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
@@ -340,6 +340,8 @@ class PIO
 
     DecodeInstruction(dt: number): Instruction
     {
+        Assert(dt >= 0);
+        AssertBits(dt, 16);
         let inst: Instruction;
         const ident = BitRange(dt, 13, 15); 
         const sd = BitRange(dt, 8, 12);
@@ -364,7 +366,13 @@ class PIO
                     inst = new PUSH(!!BitRange(dt, 5, 5), !!BitRange(dt, 6, 6), sd);
                 break;
             case 0b101:
-                inst = new MOV(BitRange(dt, 5, 7), BitRange(dt, 3, 4), BitRange(dt, 0, 2), sd);
+                const destination = BitRange(dt, 5, 7);
+                const op = BitRange(dt, 3, 4);
+                const source = BitRange(dt, 0, 2);
+                if(source == destination  && source == 0b010 && op == 0b00)
+                    inst = new NOP(sd);
+                else 
+                    inst = new MOV(destination, op, source, sd);
                 break;
             case 0b110:
                 if(!BitRange(dt, 7, 7))
