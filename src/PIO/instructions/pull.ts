@@ -1,7 +1,7 @@
-import { Assert, AssertBits, BitRange } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
-import { Instruction } from "./instructions.js";
+import { Assert, AssertBits, BitRange } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
+import { Instruction } from "./instruction";
 
 export class PULL extends Instruction
 {
@@ -9,7 +9,7 @@ export class PULL extends Instruction
     if_empty: boolean;
     protected TickFunc(machine: Machine): boolean
     {
-        if(this.if_empty && machine.output_shift_counter < machine.config.autopull_threshold)
+        if(this.if_empty && machine.output_shift_counter < machine.config!.autopull_threshold)
             return true;
         if(machine.TX_FIFO.empty)
         {

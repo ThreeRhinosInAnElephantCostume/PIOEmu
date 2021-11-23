@@ -1,10 +1,10 @@
 export {PIO};
 
-import { Machine } from "./machine.js";
-import { Block } from "./block.js";
-import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET, NOP } from "./instructions/instructions.js";
+import { Machine } from "./machine";
+import { Block } from "./block";
+import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET, NOP } from "./instructions/instructions";
 
-import { Assert, AssertBits, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "../utils.js";
+import { Assert, AssertBits, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "./utils";
 
 export const SAMPLE_BUFFER_SIZE=1*1000*1000;
 export const PINS_N = 32;
@@ -90,7 +90,7 @@ export class Waveform
     private _AddSample(s: number)
     {
         if(this.capacity == this.size)
-            this.oldest_sample_cycle+= BigInt(this.resolution);
+            this.oldest_sample_cycle += BigInt(this.resolution);
         this.samples[this.next] = s;
         this.prev = this.next;
         this.next++;
@@ -178,7 +178,7 @@ export class Waveform
         let w = new Waveform(this.capacity, res);
         w.AddSamples(this.samples);
         w.youngest_sample_cycle = this.youngest_sample_cycle;
-        this.oldest_sample_cycle = this.oldest_sample_cycle;
+        w.oldest_sample_cycle = this.oldest_sample_cycle;
         return w;
     }
 

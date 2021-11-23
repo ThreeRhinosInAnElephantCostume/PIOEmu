@@ -1,10 +1,10 @@
 export {Machine};
 
-import { PIO, ProgramConfig } from "./PIO.js";
-import { Block } from "./block.js";
-import * as ops  from "./instructions/instructions.js";
-import { FIFO } from "./FIFO.js";
-import { Assert, LikeInteger32, Mod } from "../utils.js";
+import { PIO, ProgramConfig } from "./PIO";
+import { Block } from "./block";
+import * as ops  from "./instructions/instructions";
+import { FIFO } from "./FIFO";
+import { Assert, LikeInteger32, Mod } from "./utils";
 
 class Machine
 {
@@ -19,7 +19,7 @@ class Machine
     clkdiv: number = 1;
     clk: number = 0;
 
-    config!: ProgramConfig;
+    config?: ProgramConfig;
 
     curinstgen: Generator | null = null;
     nextinstgen: Generator | null = null;
@@ -33,7 +33,8 @@ class Machine
     }
     set input_shift_counter(n: number)
     {
-        if(this.config.autopull && n >= this.config.autopush_threshold)
+        Assert(this.config != null);
+        if(this.config!.autopull && n >= this.config!.autopush_threshold)
         {
             this.input_shift_flag = true;
             this._input_shift_counter = 0;
@@ -49,7 +50,8 @@ class Machine
     }
     set output_shift_counter(n: number)
     {
-        if(this.config.autopull && n >= this.config.autopull_threshold)
+        Assert(this.config != null);
+        if(this.config!.autopull && n >= this.config!.autopull_threshold)
         {
             this.output_shift_flag = true;
             this._output_shift_counter = 0;
@@ -126,8 +128,8 @@ class Machine
 
     private UpdateFIFOs()
     {
-        const rxj = this.config.f_join_into_rx;
-        const txj = this.config.f_join_into_tx;
+        const rxj = this.config ? this.config.f_join_into_rx : false;
+        const txj = this.config ? this.config.f_join_into_tx : false;
         Assert(!(rxj && txj), "Invalid fifo configuration");
         if(rxj)
         {
@@ -149,33 +151,35 @@ class Machine
 
     get f_join_into_rx()
     {
-        return this.config.f_join_into_rx;
+        return !! (this.config?.f_join_into_rx);
     }
     set f_join_into_rx(b: boolean)
     {
-        if(this.config.f_join_into_rx == b)
+        Assert(this.config != null);
+        if(this.config!.f_join_into_rx == b)
             return;
-        this.config.f_join_into_rx = b;
+        this.config!.f_join_into_rx = b;
         if(b)
         {
-            if(this.config.f_join_into_tx)
-                this.config.f_join_into_tx = false;
+            if(this.config!.f_join_into_tx)
+                this.config!.f_join_into_tx = false;
         }
         this.UpdateFIFOs();
     }
     get f_join_into_tx()
     {
-        return this.config.f_join_into_tx;
+        return !!(this.config?.f_join_into_tx);
     }
     set f_join_into_tx(b: boolean)
     {
-        if(this.config.f_join_into_tx == b)
+        Assert(this.config != null);
+        if(this.config!.f_join_into_tx == b)
             return;
-        this.config.f_join_into_tx = b;
+        this.config!.f_join_into_tx = b;
         if(b)
         {
-            if(this.config.f_join_into_rx)
-                this.config.f_join_into_rx = false;
+            if(this.config!.f_join_into_rx)
+                this.config!.f_join_into_rx = false;
         }
         this.UpdateFIFOs();
     }
@@ -187,7 +191,8 @@ class Machine
 
     GetJumpPin()
     {
-        return this.pio.GetPin(this.config.jmp_pin);
+        Assert(this.config != null);
+        return this.pio.GetPin(this.config!.jmp_pin);
     }
 
     EXEC(inst: number)
@@ -204,6 +209,7 @@ class Machine
     }
     NextInstruction(block: Block)
     {
+        Assert(this.config != null);
         this.ResetInstructionState();
         if(this.nextinstgen != null)
         {
@@ -213,86 +219,93 @@ class Machine
         }
         this.position = this.nextposition;
         this.nextposition++;
-        if(this.nextposition == this.config.wrap)
-            this.nextposition= this.config.wrap_target;
-        if(this.nextposition >= this.config.length)
+        if(this.nextposition == this.config!.wrap)
+            this.nextposition= this.config!.wrap_target;
+        if(this.nextposition >= this.config!.length)
             this.nextposition = this.offset;
         this.curinstgen = this.LoadInstructionFromPosition(block, this.position);
     }
     GetInPins(): number
     {
+        Assert(this.config != null);
         let n = 0;
-        for(let i = 0; i < this.config.in_pins_n; i++)
+        for(let i = 0; i < this.config!.in_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config.in_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.in_pins_base+i);
             n |= (v << i);
         }
         return n;
     }
     GetOutPins(): number
     {
+        Assert(this.config != null);
         let n = 0;
-        for(let i = 0; i < this.config.set_pins_n; i++)
+        for(let i = 0; i < this.config!.set_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config.set_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.set_pins_base+i);
             n |= (v << i);
         }
         return n;
     }
     GetSetPins(): number
     {
+        Assert(this.config != null);
         let n = 0;
-        for(let i = 0; i < this.config.out_pins_n; i++)
+        for(let i = 0; i < this.config!.out_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config.out_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.out_pins_base+i);
             n |= (v << i);
         }
         return n;
     }
     SetOutPins(val: number)
     {
-        if(this.config.out_pins_n == 0)
+        Assert(this.config != null);
+        if(this.config!.out_pins_n == 0)
         {
             this.pio.LogWarning("Attempting to set pins even though none are assigned. Did you forget to assign them?");
         }
-        for(let i = 0; i < this.config.out_pins_n; i++)
+        for(let i = 0; i < this.config!.out_pins_n; i++)
         {
-            this.pio.SetPin(this.config.out_pins_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.out_pins_base+i, !!(val & (1 << i)));
         }
     }
     SetSetPins(val: number)
     {
-        if(this.config.set_pins_n == 0)
+        Assert(this.config != null);
+        if(this.config!.set_pins_n == 0)
         {
             this.pio.LogWarning("Attempting to set pins even though none are assigned. Did you forget to assign them?");
         }
-        for(let i = 0; i < this.config.set_pins_n; i++)
+        for(let i = 0; i < this.config!.set_pins_n; i++)
         {
-            this.pio.SetPin(this.config.set_pins_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.set_pins_base+i, !!(val & (1 << i)));
         }
     }
     SetSideset(val: number)
     {
-        if(this.config.sideset_n == 0)
+        Assert(this.config != null);
+        if(this.config!.sideset_n == 0)
         {
             this.pio.LogError("Attempting to set sideset even though there are no pins assigned to it. This should not compile.");
         }
-        for(let i = 0; i < this.config.sideset_n; i++)
+        for(let i = 0; i < this.config!.sideset_n; i++)
         {
-            this.pio.SetPin(this.config.sideset_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.sideset_base+i, !!(val & (1 << i)));
         }
 
     }
     SetPindirs(val: number)
     {
-        if(this.config.pindirs_n == 0)
+        Assert(this.config != null);
+        if(this.config!.pindirs_n == 0)
         {
             this.pio.LogWarning("Attempting to set pindirs even though none are assigned. Did you forget to assign them?");
         }
 
-        for(let i = 0; i < this.config.pindirs_n; i++)
+        for(let i = 0; i < this.config!.pindirs_n; i++)
         {
-            this.pio.SetPinDir(this.config.pindirs_base+i, !!(val & (1 << i)));
+            this.pio.SetPinDir(this.config!.pindirs_base+i, !!(val & (1 << i)));
         }
         
     }
@@ -339,15 +352,18 @@ class Machine
         this.lastresult = undefined;
         this.ZeroShiftCounters();
         this.UpdateFIFOs();
-        this.input_shift_counter = 0;
-        this.output_shift_counter = 32;
+        if(this.config != null)
+        {
+            this.input_shift_counter = 0;
+            this.output_shift_counter = 32;
+        }
 
     }
     SetProgram(config: ProgramConfig, offset: number)
     {
         this.offset = offset;
-        this.Reset();
         this.config = config;
+        this.Reset();
     }
     RemoveProgram()
     {

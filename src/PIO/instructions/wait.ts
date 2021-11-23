@@ -1,8 +1,8 @@
-import { Assert, AssertBits, BitRange } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
-import { Instruction } from "./instructions.js";
-import { IRQCalculateAddress } from "./irq.js";
+import { Assert, AssertBits, BitRange } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
+import { Instruction } from "./instruction";
+import { IRQCalculateAddress } from "./irq";
 
 export class WAIT extends Instruction
 {
@@ -38,9 +38,9 @@ export class WAIT extends Instruction
             0b00 : (m: Machine, pol: boolean, index: number) => m.pio.GetPin(index),
             0b01 : (m: Machine, pol: boolean, index: number) => 
             {
-                Assert(index >= m.config.in_pins_base && index < m.config.in_pins_base + m.config.in_pins_n, 
+                Assert(index >= m.config!.in_pins_base && index < m.config!.in_pins_base + m.config!.in_pins_n, 
                     "WAIT pin out of range");
-                return m.pio.GetPin(m.config.in_pins_base + index)
+                return m.pio.GetPin(m.config!.in_pins_base + index)
             },
             0b10 : this.irq_getter,
         }[source]!;

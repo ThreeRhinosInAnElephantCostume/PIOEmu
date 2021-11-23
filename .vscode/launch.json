@@ -7,10 +7,17 @@
       {
         "type": "node",
         "request": "launch",
+        "runtimeExecutable": "node",
+        "runtimeArgs": 
+        [
+          "-r", "${workspaceFolder}/node_modules/ts-node/register"
+        ],
+        "cwd": "${workspaceFolder}",
+        "env": { "TS_NODE_PROJECT": "tsconfig.node.json" },
         "name": "Launch Program",
-        "program": "${workspaceFolder}/build/server/index.js",
+        "args": ["${workspaceFolder}/index.ts"],
         "preLaunchTask": "tsc: build - tsconfig.json",
-        "outFiles": ["${workspaceFolder}/build/**/*.js"]
+        //"outFiles": ["${workspaceFolder}/build/**/*.js"]
       }
     ]
   }

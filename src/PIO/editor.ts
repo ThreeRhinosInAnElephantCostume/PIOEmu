@@ -1,9 +1,9 @@
 // import { EditorState, EditorView, basicSetup } from "@codemirror/basic-setup/"
 // //import { javascript } from "@codemirror/lang-javascript";
 
-// import { pio } from "./globals.js";
-// import { ProgramConfig } from "./PIO/PIO.js";
-// import { sleep } from "./utils.js";
+// import { pio } from "./globals";
+// import { ProgramConfig } from "./PIO/PIO";
+// import { sleep } from "./utils";
  
 
 

@@ -1,7 +1,7 @@
-import { Assert, AssertBits, BitRange, REG32_MAX,  BitsFromDir, ShiftInDir } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
-import { Instruction } from "./instructions.js";
+import { Assert, AssertBits, BitRange, REG32_MAX,  BitsFromDir, ShiftInDir } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
+import { Instruction } from "./instruction";
 
 export class OUT extends Instruction
 {
@@ -10,8 +10,8 @@ export class OUT extends Instruction
     increment_isr: boolean;
     protected TickFunc(machine: Machine): boolean
     {
-        let v = BitsFromDir(machine.OSR, this.bitcount, machine.config.out_shiftdir);
-        machine.OSR = ShiftInDir(machine.OSR, this.bitcount, machine.config.out_shiftdir);
+        let v = BitsFromDir(machine.OSR, this.bitcount, machine.config!.out_shiftdir);
+        machine.OSR = ShiftInDir(machine.OSR, this.bitcount, machine.config!.out_shiftdir);
         machine.output_shift_counter += this.bitcount;
         this.setter(machine, v);
         if(this.increment_isr)

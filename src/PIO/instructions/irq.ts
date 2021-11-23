@@ -1,7 +1,7 @@
-import { Assert, AssertBits, BitRange } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
-import { Instruction } from "./instructions.js";
+import { Assert, AssertBits, BitRange } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
+import { Instruction } from "./instruction";
 
 export function IRQCalculateAddress(machine: Machine, index: number)
 {

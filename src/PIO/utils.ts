@@ -1,9 +1,7 @@
-import { BitwiseOperator } from "typescript";
-
 export function Assert(b: boolean, msg: string="Unspecified assertion")
 {
     if(!b)
-        throw msg;
+        throw new Error(msg);
 }
 export function AssertRange(arr: any[], indx: number, msg: string = "Index out of range!")
 {
@@ -21,7 +19,7 @@ export function AssertBits(n: number, bits: number, msg?: string)
         msg = "Not a valid " + bits + " bit unsigned integer";
     }
     AssertInteger32(n, msg);
-    Assert(n < (1 << n), msg);
+    Assert(n < (1 << bits), msg);
 }
 export function BitReverse(n: number, nbits: number=32)
 {

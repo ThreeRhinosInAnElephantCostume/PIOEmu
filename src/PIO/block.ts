@@ -1,10 +1,10 @@
 export {Block};
 
-import { PIO, ProgramConfig } from "./PIO.js";
-import { Machine } from "./machine.js";
-import { Instruction }  from "./instructions/instructions.js";
-import * as ops  from "./instructions/instructions.js";
-import { Assert, AssertRange } from "../utils.js";
+import { PIO, ProgramConfig } from "./PIO";
+import { Machine } from "./machine";
+import { Instruction }  from "./instructions/instructions";
+import * as ops  from "./instructions/instructions";
+import { Assert, AssertRange } from "./utils";
 
 class Block
 {
@@ -56,7 +56,8 @@ class Block
     {
         AssertRange(this.machines, machine_index);
         let m = this.machines[machine_index];
-        for(let i = m.offset; i < m.config.length; i++)
+        Assert(m.has_program);
+        for(let i = m.offset; i < m.config!.length; i++)
         {
             this.instruction_map[i] = false;
         }

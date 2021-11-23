@@ -1,7 +1,7 @@
-import { Assert, AssertBits, BitRange, REG32_MAX,  BitsFromDir, ShiftInDir } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
-import { Instruction } from "./instructions.js";
+import { Assert, AssertBits, BitRange, REG32_MAX,  BitsFromDir, ShiftInDir } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
+import { Instruction } from "./instruction";
 
 export class IN extends Instruction
 {
@@ -12,8 +12,8 @@ export class IN extends Instruction
     {
         let v = this.getter(machine) & this.bitmask;
         machine.input_shift_counter += this.bitcount;
-        machine.ISR = ShiftInDir(machine.ISR, this.bitcount, machine.config.in_shiftdir);
-        machine.ISR |= BitsFromDir(v, this.bitcount, machine.config.in_shiftdir);
+        machine.ISR = ShiftInDir(machine.ISR, this.bitcount, machine.config!.in_shiftdir);
+        machine.ISR |= BitsFromDir(v, this.bitcount, machine.config!.in_shiftdir);
         return true;
     }
     constructor(source: number, bitcount: number, sideset_delay: number)

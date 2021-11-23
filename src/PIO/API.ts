@@ -1,10 +1,9 @@
-import { Pin, PIO, ProgramConfig } from "./PIO.js";
-import { Machine } from "./machine.js";
-import { Block } from "./block.js";
-import { Instruction, JMP, MOV, PULL } from "./instructions/instructions.js";
-import { Assert, AssertRange, BitRange, LikeInteger32 } from "../utils.js";
+import { Pin, PIO, ProgramConfig } from "./PIO";
+import { Machine } from "./machine";
+import { Block } from "./block";
+import { Instruction, JMP, MOV, PULL } from "./instructions/instructions";
+import { Assert, AssertRange, BitRange, LikeInteger32 } from "./utils";
 import { ConfigFileDiagnosticsReporter, isPrefixUnaryExpression, Program } from "typescript";
-import { pio } from "../globals.js";
 
 
 export class PIOProgram
@@ -98,10 +97,12 @@ export class PIOProgram
     }
     get clock_divider()
     {
+        Assert(this.loaded);
         return this.machine.clkdiv;
     }
     set clock_divider(n: number)
     {
+        Assert(this.loaded);
         this.machine.clkdiv = n;
     }
     
@@ -276,7 +277,7 @@ export class PIOAPI
     }
     GetPinDir(indx: number): boolean
     {
-        AssertRange(pio.pins, indx);
+        AssertRange(this._pio.pins, indx);
         return this._pio.pins[indx].isout;
     }
     SetPinState(indx: number, v: boolean)

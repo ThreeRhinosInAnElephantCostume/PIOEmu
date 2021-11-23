@@ -1,7 +1,7 @@
-import { Instruction } from "./instructions";
-import { Assert, AssertBits, BitRange } from "../../utils.js";
-import { Block } from "../block.js";
-import { Machine } from "../machine.js";
+import { Instruction } from "./instruction";
+import { Assert, AssertBits, BitRange } from "../utils";
+import { Block } from "../block";
+import { Machine } from "../machine";
 
 export class MOV extends Instruction
 {
