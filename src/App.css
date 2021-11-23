@@ -1,20 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap");
 .ide {
-  margin: auto;
+	margin: auto;
 }
 
-#IDESET {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 0 auto;
-  align-items: stretch;
+button {
+	background-color: black;
+	color: white;
+	border: none;
+}
+button:hover {
+	background: grey;
 }
 
-#NAVIGATION {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: start;
-  max-width: 20rem;
+.reflex {
+	display: grid;
+	grid-template-areas:
+		"site-header"
+		"main";
+	grid-template-columns: 1fr;
+	height: 100%;
+	background: gray;
+}
+#wrap {
+	height: 700px;
 }
