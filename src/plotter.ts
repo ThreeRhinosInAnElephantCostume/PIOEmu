@@ -12,7 +12,7 @@ export enum PlotMode
     STACKED
 }
 
-export class Graph
+export class Plotter
 {
     private _pio: PIO;
     private _pins: Pin[] = [];
@@ -139,12 +139,13 @@ export class Graph
         this._wglp.addLine(line);
         this.AppendLine(line, this.GetPinData(pin.index));
     }
-    AddPins(pins: Pin[])
+    AddPins(pins: (Pin | number)[])
     {
         Assert(pins.length > 0, "Attempting to add 0 pins");
         this.UpdateLines();
-        for(let pin of pins)
+        for(let mpin of pins)
         {
+            let pin: Pin = (typeof mpin == "number") ? this._pio.pins[mpin] : mpin;
             Assert(this._pins.indexOf(pin) == -1, "Attempting to add a pin that's already there");
             this.CreateLine(pin);
         }
@@ -155,7 +156,7 @@ export class Graph
         Assert(this._pins.indexOf(pin) == -1, "Attempting to add a pin that's already there");
         this.AddPins([pin]);
     }
-    constructor(canvas:HTMLCanvasElement, pio: PIO, mode: PlotMode, pins: Pin[] = [])
+    constructor(canvas:HTMLCanvasElement, pio: PIO, mode: PlotMode, pins: (Pin | number)[] = [])
     {
         this._canvas = canvas;
         this._pio = pio;

@@ -3,7 +3,7 @@ import { WebglPlot, WebglLine, ColorRGBA } from "./webgl-plot/dist/webglplot";
 import { PIO, ProgramConfig } from "./PIO/PIO";
 import { PIOAPI, PIOProgram } from "./PIO/API";
 import { Assert, sleep } from "./PIO/utils";
-import { Graph, PlotMode } from "./graph";
+import { Plotter, PlotMode } from "./plotter";
 
 
 const canvas = document.getElementById("my_canvas")! as HTMLCanvasElement;
@@ -61,5 +61,5 @@ api.Advancems(1);
 
 dbshow();
 
-let graph = new Graph(canvas, pio, PlotMode.STACKED, [pio.pins[1], pio.pins[2], pio.pins[3]]);
+let plot = new Plotter(canvas, pio, PlotMode.STACKED, [pio.pins[1], pio.pins[2], pio.pins[3]]);
 
