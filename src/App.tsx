@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from "react-dom";
 import './App.css';
 import NavbarScroller from './components/NavbarScroller';
-import { JavaScriptIDE } from './components/JavaScriptIDE';
-import Demo from './components/reflex-demo';
+import JavaScriptIDE from './components/JavaScriptIDE';
 
 let state = "run";
 

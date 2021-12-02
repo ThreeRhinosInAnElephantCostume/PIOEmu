@@ -3,10 +3,6 @@ import styled from 'styled-components';
 import Theme from './Theme';
 import logo from '../images/pioemu.svg';
 
-type MyProps = {
-  links: Array<{ name: string, to: string }>
-}
-
 const NavbarScroller = (props: {
   links: Array<{ name: string, to: string }>
 }) => {
