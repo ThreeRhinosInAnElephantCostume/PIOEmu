@@ -38,7 +38,7 @@ function quicktest()
     
     function dbshow()
     {
-        console.log(pio.log.GetWaveformForPin(1).GetSamples());
+        console.log(pio.log.GetWaveformForPin(1, 1).GetSamples());
     }
     
     let api = new PIOAPI(pio);

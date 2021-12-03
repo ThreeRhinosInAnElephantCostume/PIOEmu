@@ -3,21 +3,46 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
-      {
-        "type": "node",
-        "request": "launch",
-        "runtimeExecutable": "node",
-        "runtimeArgs": 
-        [
-          "-r", "${workspaceFolder}/node_modules/ts-node/register"
-        ],
-        "cwd": "${workspaceFolder}",
-        "env": { "TS_NODE_PROJECT": "tsconfig.node.json" },
-        "name": "Launch Program",
-        "args": ["${workspaceFolder}/index.ts"],
-        "preLaunchTask": "tsc: build - tsconfig.json",
-        //"outFiles": ["${workspaceFolder}/build/**/*.js"]
-      }
+    "configurations": 
+    [
+        {
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": 
+            [
+                "-r", "${workspaceFolder}/node_modules/ts-node/register"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": { "TS_NODE_PROJECT": "tsconfig.node.json" },
+            "name": "Launch Program",
+            "args": ["${workspaceFolder}/index.ts"],
+            //"preLaunchTask": "tsc: build - tsconfig.json",
+            //"outFiles": ["${workspaceFolder}/build/**/*.js"]
+        },
+        {
+            "name": "Launch localhost",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost:8080/index.html",
+            "pathMappings": 
+            [
+                {
+                    "url": "http://localhost:8080",
+                    "path": "${workspaceFolder}"
+                }
+            ],
+            "preLaunchTask": "delay",
+            //"preLaunchTask": "tsc: build - tsconfig.json",
+        }
+    ],
+    "compounds": 
+    [
+        {
+            "name": "Server/Client",
+            "configurations": ["Launch Program", "Launch localhost"],
+            "preLaunchTask": "tsc: build - tsconfig.json"
+        }
     ]
-  }
+}

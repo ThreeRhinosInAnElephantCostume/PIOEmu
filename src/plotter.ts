@@ -1,16 +1,25 @@
 import { WebglPlot, WebglLine, ColorRGBA } from "./webgl-plot/dist/webglplot";
 
-import { Pin, PINS_N, PIN_HIGH, PIO, ProgramConfig } from "./PIO/PIO";
+import { Pin, PINS_N, PIN_HIGH, PIO, ProgramConfig, SAMPLE_BUFFER_SIZE } from "./PIO/PIO";
 import { PIOAPI, PIOProgram } from "./PIO/API";
 import { Assert, sleep } from "./PIO/utils";
 
-const line_colors = [new ColorRGBA(0.3, 1, 0.3, 1)]
+const line_colors = 
+[
+    new ColorRGBA(0.3, 1, 0.3, 1), 
+    new ColorRGBA(0.3, 0.9, 0.8, 1),
+    new ColorRGBA(1, 0.4, 0.4, 1)
+]
 
 export enum PlotMode
 {
     OSCILOSCOPE,
     STACKED
 }
+
+const CYCLES_PER_PIXEL_MIN = 0.001;
+const CYCLES_PER_PIXEL_MAX = 10;
+const CYCLES_PER_PIXEL_STEP = 0.9;
 
 export class Plotter
 {
@@ -21,7 +30,10 @@ export class Plotter
 
     private _wglp: WebglPlot;
     private _linesByPin= new Map<number, WebglLine>();
+
     private _cycles_per_pixel = 1;
+
+    private _waveform_step = 0;
 
     private _lastcycle = 0n;
 
@@ -30,6 +42,9 @@ export class Plotter
     private _sepmargin = 0.05;
 
     private _viewKind: PlotMode = PlotMode.OSCILOSCOPE;
+    private _offset: number = 0;
+
+    private _dragging = false;
     get plotMode(): PlotMode
     {
         return this._viewKind;
@@ -42,8 +57,18 @@ export class Plotter
 
     private _Update()
     {
+        const waveform_level = Math.log2(this._cycles_per_pixel);
+        const old_res = this._waveform_step;
+        if(waveform_level > this._waveform_step+1)
+            this._waveform_step++;
+        else if(waveform_level < this._waveform_step-1 || waveform_level <= 1)
+            this._waveform_step = Math.max(this._waveform_step-1, 0);
+        if(this._waveform_step != old_res)
+            this._pins.forEach((pin: Pin) => this.ReloadPin(pin));
+
         this.UpdateLines();
-        this.UpdateScaling();
+        this.UpdateScaling()
+        this._wglp.gOffsetX = (((this._offset/this._cycles_per_pixel)*this._wglp.gScaleX))/this._canvas.width;
     }
     private _NewFrame()
     {
@@ -64,6 +89,8 @@ export class Plotter
     {
         const cdif = Number(this._pio.current_cycle - this._lastcycle);
         this._lastcycle = this._pio.current_cycle;
+
+        this._wglp.gScaleX = SAMPLE_BUFFER_SIZE/(this._canvas.width*this._cycles_per_pixel)
 
         if(cdif == 0 || this._pins.length == 0)
             return;
@@ -117,11 +144,18 @@ export class Plotter
 
     GetPinData(pin: number) : number[]
     {
-        return this._pio.log.GetWaveformForPin(pin).GetSamples();
+        return this._pio.log.GetWaveformForPin(pin, 2**this._waveform_step).GetSamples();
+    }
+    private ReloadPin(pin: Pin)
+    {   
+        const line = this._linesByPin.get(pin.index)!;
+        line.lineSpaceX(-1, 2/line.numPoints);
+        line.scaleY = 0.1;
+        this.AppendLine(line, this.GetPinData(pin.index));
     }
     private CreateLine(pin: Pin)
     {
-        const points =  Math.round(this._canvas.width/this._cycles_per_pixel);
+        const points =  Math.round(SAMPLE_BUFFER_SIZE);//this._canvas.width/this._cycles_per_pixel);
         let c: ColorRGBA;
         if(this._pins.length < line_colors.length)
         {
@@ -137,7 +171,7 @@ export class Plotter
         line.scaleY = 0.1;
         this._linesByPin.set(pin.index, line);
         this._wglp.addLine(line);
-        this.AppendLine(line, this.GetPinData(pin.index));
+        this.ReloadPin(pin);
     }
     AddPins(pins: (Pin | number)[])
     {
@@ -165,6 +199,29 @@ export class Plotter
         if(pins.length > 0)
             this.AddPins(pins);
         this.Refresh();
+        canvas.addEventListener("resize", (ev) => this._NewFrame());
+        canvas.addEventListener("mousedown", (ev) => this._dragging = true);
+        canvas.addEventListener("mouseup", (ev) => this._dragging = false);
+        canvas.addEventListener("mouseleave", (ev) => this._dragging = false);
+        canvas.addEventListener("mousemove", (ev) => 
+        {
+            if(!this._dragging)
+                return;
+            this._offset += ev.movementX*this._cycles_per_pixel;
+            const xoff = (this._cycles_per_pixel*this._canvas.width);
+            this._offset = Math.max(-xoff, this._offset);
+            this._offset = Math.min(this._offset, SAMPLE_BUFFER_SIZE+xoff);
+            this.Refresh();
+        })
+        canvas.addEventListener("wheel", (ev) => 
+        {
+            if(ev.deltaY > 0)
+                this._cycles_per_pixel /= 0.9;
+            else
+                this._cycles_per_pixel *=  0.9;
+            //this._cycles_per_pixel = Math.min(Math.max(this._cycles_per_pixel+(ev.deltaY/5000), CYCLES_PER_PIXEL_MIN), CYCLES_PER_PIXEL_MAX)
+            this.Refresh();
+        });
     }
     
 }

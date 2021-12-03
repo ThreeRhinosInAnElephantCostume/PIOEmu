@@ -14,6 +14,16 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "delay",
+            "type": "shell",
+            "command": "sleep 4",
+            "group": "none",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "new"
+            }
         }
     ]
 }

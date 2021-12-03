@@ -3,7 +3,6 @@ import { Machine } from "./machine";
 import { Block } from "./block";
 import { Instruction, JMP, MOV, PULL } from "./instructions/instructions";
 import { Assert, AssertRange, BitRange, LikeInteger32 } from "./utils";
-import { ConfigFileDiagnosticsReporter, isPrefixUnaryExpression, Program } from "typescript";
 
 
 export class PIOProgram

@@ -141,6 +141,7 @@ export class Waveform
             if(this.partial_counter == 0)
                 this._AddSample(s);
             this.partial_counter++;
+            this.partial_sample += s/this.resolution;
             if(this.partial_counter == this.resolution)
             {
                 this.partial_counter = 0;
@@ -149,7 +150,6 @@ export class Waveform
             }
             else
             {
-                this.partial_sample += s/this.resolution;
                 this.samples[this.prev] = s;
             }
         }
@@ -176,7 +176,7 @@ export class Waveform
     RecreateWithResolution(res: number): Waveform
     {
         let w = new Waveform(this.capacity, res);
-        w.AddSamples(this.samples);
+        w.AddSamples(this.GetSamples());
         w.youngest_sample_cycle = this.youngest_sample_cycle;
         w.oldest_sample_cycle = this.oldest_sample_cycle;
         return w;
@@ -215,17 +215,24 @@ export class Log
     }
     GetLastSampleCycle(pinid: number): bigint
     {
-        return this.GetWaveformForPin(pinid).youngest_sample_cycle;
+        return this.GetWaveformForPin(pinid, 1).youngest_sample_cycle;
     }
     GetWaveformsForPin(pinid: number): Waveform[]
     {
         Assert(pinid >= 0 && pinid < this.pin_waveforms.length);
         return this.pin_waveforms[pinid];
     }
-    GetWaveformForPin(pinid: number): Waveform
+    GetWaveformForPin(pinid: number, cycles_per_sample: number): Waveform
     {
         Assert(pinid >= 0 && pinid < this.pin_waveforms.length);
-        return this.pin_waveforms[pinid][0];
+        Assert(cycles_per_sample > 0);
+        let waveforms: Waveform[] = this.pin_waveforms[pinid];
+        const expected_depth = Math.log2(cycles_per_sample);
+        const closest_depth = Math.max(Math.round(expected_depth), 0);
+        while(waveforms.length <= closest_depth)
+            waveforms.push(waveforms[waveforms.length-1].RecreateWithResolution(waveforms[waveforms.length-1].resolution*2))
+        this.pin_waveforms[pinid] = waveforms;
+        return waveforms[closest_depth];
     }
     constructor()
     {
