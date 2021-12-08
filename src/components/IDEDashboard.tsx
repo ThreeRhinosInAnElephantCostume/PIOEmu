@@ -2,6 +2,7 @@ import React, {Fragment, Component} from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
+import { Button, ButtonGroup, Slider } from '@mui/material';
 
 import "react-reflex/styles.css";
 
@@ -13,7 +14,7 @@ type IDEProps = {
   type?: string;
 }
 
-export default class JavaScriptIDE extends React.Component<IDEProps, IDEState> {
+export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
   state: IDEState = {
     dashboard_type: "base",
   };
@@ -66,8 +67,9 @@ export default class JavaScriptIDE extends React.Component<IDEProps, IDEState> {
   dashboardPlotter = () =>  {
     return (
     <Fragment>
-    <button onClick={this.onClick }>PLOT A</button>
-    <button onClick={this.onClick }>PLOT B</button>
+    <Button variant="contained" onClick={this.onClick}>PLOT A</Button>
+    <Button variant="contained" onClick={this.onClick}>PLOT B</Button>
+    <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
     </Fragment>
     ) 
   };
@@ -75,8 +77,8 @@ export default class JavaScriptIDE extends React.Component<IDEProps, IDEState> {
   dashboardBase = () =>  {
     return (
     <Fragment>
-    <button onClick={this.onClick}>RUN</button>
-    <button onClick={this.onClick}>DEBUG</button>
+    <Button variant="contained" onClick={this.onClick}>RUN</Button>
+    <Button variant="contained" onClick={this.onClick}>DEBUG</Button>
     </Fragment>
     ); 
   };
@@ -84,19 +86,19 @@ export default class JavaScriptIDE extends React.Component<IDEProps, IDEState> {
   dashboard3rd = () =>  {
     return (
     <Fragment>
-    <button onClick={this.onClick}>3rd 1</button>
-    <button onClick={this.onClick}>3rd 2</button>
+    <Button variant="contained" onClick={this.onClick}>3rd 1</Button>
+    <Button variant="contained" onClick={this.onClick}>3rd 2</Button>
     </Fragment>
     ); 
   };
 
   dashboardNav = () => {
     return (
-    <div id="dashboardNav">
-      <button onClick={this.setNavBase}>BASE</button>
-      <button onClick={this.setNavPlotter}>PLOTTER</button>
-      <button onClick={this.setNav3RD}>3RD</button>
-    </div>);
+    <ButtonGroup variant="contained" aria-label="outlined primary button group">
+    <Button onClick={this.setNavBase}>BASE</Button>
+    <Button onClick={this.setNavPlotter}>PLOTTER</Button>
+    <Button onClick={this.setNav3RD}>3RD</Button>
+    </ButtonGroup>);
   };
 
   onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) =>  {

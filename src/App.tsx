@@ -1,10 +1,24 @@
 import React, { Component } from 'react';
 import ReactDOM from "react-dom";
 import './App.css';
-import NavbarScroller from './components/NavbarScroller';
-import JavaScriptIDE from './components/JavaScriptIDE';
+import IDEDashboard from './components/IDEDashboard';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import NavBar from './components/NavBar';
 
-let state = "run";
+const maintheme = createTheme({
+  palette: {
+    primary: {
+      main: `#C51A4A`, //red `#C51A4A`
+      dark: `#24292e`,
+      contrastText: 'white',
+    },
+    secondary: {
+      main: '#fff', 
+      contrastText: 'black',
+      //dark: `#000000`, //green
+    }
+  },
+});
 
 const navigation = {
   links: [
@@ -17,13 +31,13 @@ const navigation = {
 
 export default class App extends Component {
   public render() {
-    const { links } = navigation;
-
     return (
-      <div id="wrap">
-        <NavbarScroller links={links} />
-        <JavaScriptIDE />
+      <ThemeProvider theme={maintheme}>
+        <NavBar />
+      <div id="resizable-divs"> 
+        <IDEDashboard />
       </div>
+      </ThemeProvider>
     );
   }
 }

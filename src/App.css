@@ -4,14 +4,7 @@
 }
 
 button {
-	background-color: black;
-	color: white;
-	border: none;
-	height: 2em;
 	width: 100%;
-}
-button:hover {
-	background: #c51a4a;
 }
 
 .reflex {
@@ -22,19 +15,16 @@ button:hover {
 	grid-template-columns: 1fr;
 	background: #c51a4a;
 }
-#wrap {
+#resizable-divs {
 	height: 700px;
 }
 
 .DASHBOARD {
 	display: flex;
 	flex-direction: column;
-	background-color: black;
 }
 
 #dashboardNav {
 	display: flex;
 	flex-direction: row;
-	align-content: stretch;
-	background: #c51a4a;
 }
