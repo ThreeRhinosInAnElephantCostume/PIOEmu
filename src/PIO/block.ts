@@ -1,12 +1,10 @@
-export {Block};
-
 import { PIO, ProgramConfig } from "./PIO";
 import { Machine } from "./machine";
-import { Instruction }  from "./instructions/instructions";
-import * as ops  from "./instructions/instructions";
+import { Instruction } from "./instructions/instructions";
+import * as ops from "./instructions/instructions";
 import { Assert, AssertRange } from "./utils";
 
-class Block
+export class Block
 {
     pio: PIO;
 
@@ -78,7 +76,7 @@ class Block
     {
         this.pio = pio;
         this.machines = [];
-        for(let i = 0 ; i < machines_n; i++)
+        for(let i = 0; i < machines_n; i++)
         {
             this.machines.push(new Machine(pio, i));
         }

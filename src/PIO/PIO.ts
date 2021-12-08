@@ -1,4 +1,3 @@
-export {PIO};
 
 import { Machine } from "./machine";
 import { Block } from "./block";
@@ -6,7 +5,7 @@ import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET, NOP } from 
 
 import { Assert, AssertBits, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "./utils";
 
-export const SAMPLE_BUFFER_SIZE=1*1000*1000;
+export const SAMPLE_BUFFER_SIZE = 1 * 1000 * 1000;
 export const PINS_N = 32;
 export const PIN_HIGH = 3.3;
 export const PIN_LOW = 0;
@@ -54,7 +53,7 @@ export class ProgramConfig
         this.length = instructions.length;
         this.wrap_target = instructions.length;
     }
-    
+
 }
 
 export class Pin
@@ -62,7 +61,7 @@ export class Pin
     index: number;
     isout: boolean = false;
     state: boolean = false;
-    constructor (index: number)
+    constructor(index: number)
     {
         this.index = index;
     }
@@ -72,7 +71,7 @@ export class Waveform
     private samples: number[];
     private next: number = 0;
     private prev: number = 0;
-    get size() : number
+    get size(): number
     {
         return this.samples.length;
     }
@@ -96,7 +95,7 @@ export class Waveform
         this.next++;
         this.next %= this.capacity;
     }
-    ReplaceLastSample(s : number)
+    ReplaceLastSample(s: number)
     {
         this.samples[this.prev] = s;
         if(this.resolution == 1)
@@ -107,22 +106,22 @@ export class Waveform
                 this.prev--;
                 this.next--;
                 if(this.prev < 0)
-                    this.prev = this.capacity-1;
+                    this.prev = this.capacity - 1;
                 if(this.next < 0)
-                    this.next = this.capacity -1;
+                    this.next = this.capacity - 1;
             }
         }
         else if(this.partial_counter == 0)
         {
-            let pprev = this.prev-1;
+            let pprev = this.prev - 1;
             if(pprev == -1)
-                pprev = this.capacity-1;
-            this.samples[pprev] -= this.last_sample/this.resolution;
-            this.samples[pprev] += s/this.resolution;
+                pprev = this.capacity - 1;
+            this.samples[pprev] -= this.last_sample / this.resolution;
+            this.samples[pprev] += s / this.resolution;
         }
         else
         {
-            this.partial_sample -= this.last_sample/this.resolution;
+            this.partial_sample -= this.last_sample / this.resolution;
             this.partial_sample += s;
         }
         this.last_sample = s;
@@ -141,7 +140,7 @@ export class Waveform
             if(this.partial_counter == 0)
                 this._AddSample(s);
             this.partial_counter++;
-            this.partial_sample += s/this.resolution;
+            this.partial_sample += s / this.resolution;
             if(this.partial_counter == this.resolution)
             {
                 this.partial_counter = 0;
@@ -161,18 +160,18 @@ export class Waveform
             this.AddSample(it);
         }
     }
-    
+
     GetSamples(): number[]
     {
         if(this.size == this.capacity && this.next != 0)
         {
-            this.samples.copyWithin(this.size-1, 0, this.next);
+            this.samples.copyWithin(this.size - 1, 0, this.next);
             this.next = 0;
             this.samples = this.samples.concat(this.samples.splice(0, this.next));
         }
         return this.samples;
     }
-    
+
     RecreateWithResolution(res: number): Waveform
     {
         let w = new Waveform(this.capacity, res);
@@ -200,17 +199,17 @@ export class Log
             it.ReplaceLastSample(s);
         }
     }
-    AddSample(pinid:number, s: number)
+    AddSample(pinid: number, s: number)
     {
         let waveforms: Waveform[] = this.pin_waveforms[pinid];
         for(let it of waveforms)
         {
             it.AddSample(s);
         }
-        const last = waveforms[waveforms.length-1];
+        const last = waveforms[waveforms.length - 1];
         if(last.size == last.capacity)
         {
-            waveforms.push(last.RecreateWithResolution(last.resolution*2));
+            waveforms.push(last.RecreateWithResolution(last.resolution * 2));
         }
     }
     GetLastSampleCycle(pinid: number): bigint
@@ -230,7 +229,7 @@ export class Log
         const expected_depth = Math.log2(cycles_per_sample);
         const closest_depth = Math.max(Math.round(expected_depth), 0);
         while(waveforms.length <= closest_depth)
-            waveforms.push(waveforms[waveforms.length-1].RecreateWithResolution(waveforms[waveforms.length-1].resolution*2))
+            waveforms.push(waveforms[waveforms.length - 1].RecreateWithResolution(waveforms[waveforms.length - 1].resolution * 2));
         this.pin_waveforms[pinid] = waveforms;
         return waveforms[closest_depth];
     }
@@ -245,7 +244,7 @@ export class Log
 }
 
 
-class PIO 
+export class PIO 
 {
     pins: Pin[];
     blocks: Block[];
@@ -269,7 +268,7 @@ class PIO
             this.log.ReplaceLastSample(pinid, (state) ? PIN_HIGH : PIN_LOW);
             return;
         }
-        for(let i = 0; i < cycle-lastupdate; i++)
+        for(let i = 0; i < cycle - lastupdate; i++)
         {
             this.log.AddSample(pinid, (state) ? PIN_HIGH : PIN_LOW); // TODO: simulating pin capacitance
         }
@@ -282,7 +281,7 @@ class PIO
             this.SimulatePin(i, this.pins[i].state, this.current_cycle);
         }
     }
-    
+
     LogWarning(msg: string)
     {
         console.log(msg);
@@ -302,11 +301,11 @@ class PIO
         Assert(pinid >= 0 && pinid < this.pins.length);
         if(!this.pins[pinid].isout)
         {
-            this.LogWarning("Pin " + this.pins)
+            this.LogWarning("Pin " + this.pins);
             return;
         }
         if(this.current_cycle > 0)
-            this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle-1n);
+            this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle - 1n);
         this.pins[pinid].state = val;
         this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
     }
@@ -318,19 +317,19 @@ class PIO
     SetPinDirs(pin_base: number, n: number, isout: boolean)
     {
         Assert(n > 0);
-        for(let i =0 ; i < n; i++)
+        for(let i = 0; i < n; i++)
         {
-            this.SetPinDir(i+pin_base, isout);
+            this.SetPinDir(i + pin_base, isout);
         }
     }
 
     Clock(n: number)
     {
         let sm: [Machine, Block][] = [];
-        this.blocks.forEach((b)=>b.machines.forEach((m) => {if(m.running)sm.push([m, b]);}));
-        sm.sort((a, b) => a[0].ClockDivisor()-b[0].ClockDivisor());
-        let step  = Math.floor(sm[0][0].ClockDivisor());
-        while (n > 0)
+        this.blocks.forEach((b) => b.machines.forEach((m) => { if(m.running) sm.push([m, b]); }));
+        sm.sort((a, b) => a[0].ClockDivisor() - b[0].ClockDivisor());
+        let step = Math.floor(sm[0][0].ClockDivisor());
+        while(n > 0)
         {
             let nstep = Math.min(n, step);
             const startcycle: bigint = this.current_cycle;
@@ -350,7 +349,7 @@ class PIO
         Assert(dt >= 0);
         AssertBits(dt, 16);
         let inst: Instruction;
-        const ident = BitRange(dt, 13, 15); 
+        const ident = BitRange(dt, 13, 15);
         const sd = BitRange(dt, 8, 12);
         switch(ident)
         {
@@ -361,7 +360,7 @@ class PIO
                 inst = new WAIT(!!BitRange(dt, 7, 7), BitRange(dt, 5, 6), BitRange(dt, 0, 4), sd);
                 break;
             case 0b010:
-                inst = new IN(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd)
+                inst = new IN(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd);
                 break;
             case 0b011:
                 inst = new OUT(BitRange(dt, 5, 7), BitRange(dt, 0, 4), sd);
@@ -376,9 +375,9 @@ class PIO
                 const destination = BitRange(dt, 5, 7);
                 const op = BitRange(dt, 3, 4);
                 const source = BitRange(dt, 0, 2);
-                if(source == destination  && source == 0b010 && op == 0b00)
+                if(source == destination && source == 0b010 && op == 0b00)
                     inst = new NOP(sd);
-                else 
+                else
                     inst = new MOV(destination, op, source, sd);
                 break;
             case 0b110:
@@ -402,9 +401,9 @@ class PIO
         }
         return ret;
     }
-    GetFreeBlockAndMachine(n_inst: number): {found: boolean; block_index: number; machine_index: number, offset: number}
+    GetFreeBlockAndMachine(n_inst: number): { found: boolean; block_index: number; machine_index: number, offset: number; }
     {
-        let ret = {found: false, block_index: -1, machine_index: -1, offset: -1};
+        let ret = { found: false, block_index: -1, machine_index: -1, offset: -1 };
         for(let i = 0; i < this.blocks.length; i++)
         {
             const it = this.blocks[i];
@@ -440,7 +439,7 @@ class PIO
     SetIRQ(address: number, val: boolean): boolean // TODO: attaching interrupts
     {
         AssertRange(this.irq_vector, address);
-        if(this.irq_vector[address] == val) 
+        if(this.irq_vector[address] == val)
             return false;
         this.irq_vector[address] = val; // TODO: attaching interrupts
         return true;
@@ -459,7 +458,7 @@ class PIO
         return this.irq_vector[address];
     }
 
-    constructor(frequency:number = 133*1000*1000, pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
+    constructor(frequency: number = 133 * 1000 * 1000, pins_n: number = 32, block_n: number = 2, machines_per_block: number = 4, instructions_per_machine: number = 32)
     {
         this.frequency = frequency;
         this.pins = [];

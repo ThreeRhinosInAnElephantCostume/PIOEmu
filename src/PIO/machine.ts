@@ -1,19 +1,17 @@
-export {Machine};
-
 import { PIO, ProgramConfig } from "./PIO";
 import { Block } from "./block";
-import * as ops  from "./instructions/instructions";
+import * as ops from "./instructions/instructions";
 import { FIFO } from "./FIFO";
 import { Assert, LikeInteger32, Mod } from "./utils";
 
-class Machine
+export class Machine
 {
     pio: PIO;
     index: number;
 
     offset!: number;
     position!: number;
-    nextposition!: number
+    nextposition!: number;
     running!: boolean;
 
     clkdiv: number = 1;
@@ -56,7 +54,7 @@ class Machine
             this.output_shift_flag = true;
             this._output_shift_counter = 0;
         }
-        else 
+        else
             this._output_shift_counter = Math.min(32, n); // Seems to be how the documentation says it works?
     }
 
@@ -88,30 +86,30 @@ class Machine
     STATUS: number = 0;
 
     private _ISR: number = 0;
-    set ISR(v:number)
+    set ISR(v: number)
     {
         this.input_shift_counter = 0;
         this._ISR = LikeInteger32(v);
     }
-    get ISR():number
+    get ISR(): number
     {
         return this._ISR;
     }
 
     private _OSR: number = 0;
-    set OSR(v:number)
+    set OSR(v: number)
     {
         this.output_shift_counter = 0;
         this._OSR = LikeInteger32(v);
     }
-    get OSR():number
+    get OSR(): number
     {
         return this._OSR;
     }
 
     set PC(v: number)
     {
-        this.nextposition = this.offset+v;
+        this.nextposition = this.offset + v;
     }
 
     private ZeroShiftCounters()
@@ -151,7 +149,7 @@ class Machine
 
     get f_join_into_rx()
     {
-        return !! (this.config?.f_join_into_rx);
+        return !!(this.config?.f_join_into_rx);
     }
     set f_join_into_rx(b: boolean)
     {
@@ -183,7 +181,7 @@ class Machine
         }
         this.UpdateFIFOs();
     }
-    
+
     get has_program(): boolean
     {
         return !(this.config == undefined || this.config == null);
@@ -220,7 +218,7 @@ class Machine
         this.position = this.nextposition;
         this.nextposition++;
         if(this.nextposition == this.config!.wrap)
-            this.nextposition= this.config!.wrap_target;
+            this.nextposition = this.config!.wrap_target;
         if(this.nextposition >= this.config!.length)
             this.nextposition = this.offset;
         this.curinstgen = this.LoadInstructionFromPosition(block, this.position);
@@ -231,7 +229,7 @@ class Machine
         let n = 0;
         for(let i = 0; i < this.config!.in_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config!.in_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.in_pins_base + i);
             n |= (v << i);
         }
         return n;
@@ -242,7 +240,7 @@ class Machine
         let n = 0;
         for(let i = 0; i < this.config!.set_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config!.set_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.set_pins_base + i);
             n |= (v << i);
         }
         return n;
@@ -253,7 +251,7 @@ class Machine
         let n = 0;
         for(let i = 0; i < this.config!.out_pins_n; i++)
         {
-            let v = +this.pio.GetPin(this.config!.out_pins_base+i);
+            let v = +this.pio.GetPin(this.config!.out_pins_base + i);
             n |= (v << i);
         }
         return n;
@@ -267,7 +265,7 @@ class Machine
         }
         for(let i = 0; i < this.config!.out_pins_n; i++)
         {
-            this.pio.SetPin(this.config!.out_pins_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.out_pins_base + i, !!(val & (1 << i)));
         }
     }
     SetSetPins(val: number)
@@ -279,7 +277,7 @@ class Machine
         }
         for(let i = 0; i < this.config!.set_pins_n; i++)
         {
-            this.pio.SetPin(this.config!.set_pins_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.set_pins_base + i, !!(val & (1 << i)));
         }
     }
     SetSideset(val: number)
@@ -291,7 +289,7 @@ class Machine
         }
         for(let i = 0; i < this.config!.sideset_n; i++)
         {
-            this.pio.SetPin(this.config!.sideset_base+i, !!(val & (1 << i)));
+            this.pio.SetPin(this.config!.sideset_base + i, !!(val & (1 << i)));
         }
 
     }
@@ -305,18 +303,18 @@ class Machine
 
         for(let i = 0; i < this.config!.pindirs_n; i++)
         {
-            this.pio.SetPinDir(this.config!.pindirs_base+i, !!(val & (1 << i)));
+            this.pio.SetPinDir(this.config!.pindirs_base + i, !!(val & (1 << i)));
         }
-        
+
     }
     private Tick(block: Block)
     {
         if(this.curinstgen == null)
-            this.NextInstruction(block);    
+            this.NextInstruction(block);
         this.lastresult = this.curinstgen?.next();
         if(this.lastresult?.done)
         {
-            this.NextInstruction(block);    
+            this.NextInstruction(block);
         }
     }
     ClocksTillTick()
@@ -336,7 +334,7 @@ class Machine
         let ts = 0;
         while(this.clk >= this.clkdiv)
         {
-            this.clk -= this.clkdiv
+            this.clk -= this.clkdiv;
             this.Tick(block);
             ts++;
         }
