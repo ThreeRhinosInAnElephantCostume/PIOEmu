@@ -1,4 +1,43 @@
 {
+<<<<<<< HEAD
+    "compilerOptions": 
+    {
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "target": "esnext",
+        "jsx": "preserve",
+        "outDir": "build",
+        "strictFunctionTypes": true,
+        "sourceMap": true,
+        "strict": true,   
+        "noImplicitAny": true,
+        "strictPropertyInitialization": true,
+        "allowSyntheticDefaultImports": true,
+        //"esModuleInterop": true,
+        "typeRoots": 
+        [
+            "node_modules/webgl-plot/src/"
+        ],
+        "baseUrl": ".",
+        "paths": 
+        {
+          "*": ["node_modules/*"],
+          ".": ["node_modules/*"],
+          "webgl-plot/*" : ["node_modules/webgl-plot/*"]
+        }
+    },
+    "exclude": 
+    [
+        "index.ts",
+        "*/index.ts",
+        "server/*",
+        "node_modules",
+        "**/node_modules/*",
+        "../node_modules",
+        "../**/node_modules/*",
+    ],
+}
+=======
   "compilerOptions": {
     "target": "es5",
     "lib": [
@@ -24,3 +63,4 @@
     "src"
   ]
 }
+>>>>>>> TheGreatMerge

@@ -1,0 +1,23 @@
+{
+    "compilerOptions": 
+    {
+        "module": "commonjs",
+        "moduleResolution": "Node",
+        "target": "esnext",
+        "jsx": "preserve",
+        "strictFunctionTypes": true,
+        "sourceMap": true,
+        "strict": true,   
+        "noImplicitAny": true,
+        "strictPropertyInitialization": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+    },
+    "exclude": 
+    [
+        "node_modules",
+        "**/node_modules/*",
+        "../node_modules",
+        "../**/node_modules/*",
+    ],
+}

@@ -4,6 +4,26 @@
   "private": true,
   "dependencies": {
     "@codemirror/lang-javascript": "^0.19.3",
+<<<<<<< HEAD
+    "@rollup/plugin-node-resolve": "^13.0.6",
+    "dygraphs": "^2.1.0",
+    "express": "^4.17.1",
+    "rollup": "^2.60.0",
+    "typescript": "^4.5.0-beta",
+    "uniq": "^1.0.1",
+    "webgl-plot": "^0.6.4"
+  },
+  "devDependencies": {
+    "@types/codemirror": "^5.60.5",
+    "@types/dygraphs": "^2.1.4",
+    "@types/express": "^4.17.13",
+    "codemirror": "^5.63.3",
+    "ts-node": "^10.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThreeRhinosInAnElephantCostume/PIOEmu.git"
+=======
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@mui/material": "^5.2.2",
@@ -30,6 +50,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+>>>>>>> TheGreatMerge
   },
   "eslintConfig": {
     "extends": [
