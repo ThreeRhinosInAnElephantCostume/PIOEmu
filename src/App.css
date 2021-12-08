@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap");
+.ide {
+	margin: auto;
+}
+
+button {
+	width: 100%;
+}
+
+.reflex {
+	display: grid;
+	grid-template-areas:
+		"site-header"
+		"main";
+	grid-template-columns: 1fr;
+	background: #c51a4a;
+}
+#resizable-divs {
+	height: 700px;
+}
+
+.DASHBOARD {
+	display: flex;
+	flex-direction: column;
+}
+
+#dashboardNav {
+	display: flex;
+	flex-direction: row;
+}

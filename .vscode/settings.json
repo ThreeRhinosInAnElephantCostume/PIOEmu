@@ -1,3 +1,12 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "javascript.format.semicolons": "insert",
+    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "typescript.format.semicolons": "insert",
+    "typescript.format.enable": true,
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+    "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
 }
