@@ -1,4 +1,4 @@
-import { WebglPlot, WebglLine, ColorRGBA } from "./webgl-plot/dist/webglplot";
+import { WebglPlot, WebglLine, ColorRGBA } from "webgl-plot";
 
 import { PIO, ProgramConfig } from "./PIO/PIO";
 import { PIOAPI, PIOProgram } from "./PIO/API";
@@ -19,12 +19,12 @@ let res = await fetch(filename);
 Assert(res.ok, "Failed to fetch " + filename);
 let buf = await res.text();
 
-let dt: Uint16Array = new Uint16Array(buf.length/4);
+let dt: Uint16Array = new Uint16Array(buf.length / 4);
 
 let ii = 0;
-for(let i = 0; i+3 < buf.length; i+=5)
+for(let i = 0; i + 3 < buf.length; i += 5)
 {
-    let s = buf.substring(i, i+4);
+    let s = buf.substring(i, i + 4);
     dt[ii] = Number.parseInt(s, 16);
     ii++;
 }
