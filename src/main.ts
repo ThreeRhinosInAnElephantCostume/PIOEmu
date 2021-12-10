@@ -19,6 +19,8 @@ export async function test(canvas: HTMLCanvasElement)
     Assert(res.ok, "Failed to fetch " + filename);
     let buf = await res.text();
 
+    console.log(buf);
+
     let dt: Uint16Array = new Uint16Array(buf.length / 4);
 
     let ii = 0;
