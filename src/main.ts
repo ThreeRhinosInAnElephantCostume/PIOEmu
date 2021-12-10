@@ -11,7 +11,6 @@ export async function test(canvas: HTMLCanvasElement)
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
 
-    var pio = new PIO();
 
     let filename = "examples/pwm";
 
@@ -31,6 +30,8 @@ export async function test(canvas: HTMLCanvasElement)
         ii++;
     }
     dt = dt.slice(0, ii);
+
+    var pio = new PIO();
 
     let instructions = pio.DecodeProgram(dt);
     let config = new ProgramConfig(instructions);
