@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import './App.css';
 import IDEDashboard from './components/IDEDashboard';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import NavBar from './components/NavBar';
+import SimpleNavbar from './components/SimpleNavbar';
 
 const maintheme = createTheme({
   palette: {
@@ -33,7 +33,7 @@ export default class App extends Component {
   public render() {
     return (
       <ThemeProvider theme={maintheme}>
-        <NavBar />
+        <SimpleNavbar />
       <div id="resizable-divs"> 
         <IDEDashboard />
       </div>
