@@ -42,7 +42,16 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
           <ReflexSplitter />
           <ReflexElement>
             <CodeMirror id="PIOIDE"
-              value="console.log('This is a PIO editor');"
+              value="90a0
+a0c7
+9080
+a027
+a046
+00a7
+1808
+a042
+0085
+0002"
               onChange={(valueJS, viewUpdate) =>
               {
                 console.log('value:', valueJS);
@@ -125,3 +134,4 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
     console.log(this.state.dashboard_type);
   };
 };
+
