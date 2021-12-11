@@ -1,11 +1,12 @@
-import React, { Fragment, Component } from 'react';
+import React, { Fragment, Component, ReactElement } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { Button, ButtonGroup, Slider } from '@mui/material';
-import { test } from '../main';
+import { plotCanvases, plotters, RunProgram } from '../main';
 
 import "react-reflex/styles.css";
+import ReactDOM from 'react-dom';
 
 type IDEState = {
   dashboard_type: string;
@@ -82,18 +83,31 @@ a042
     this.setState({ dashboard_type: "3RD" });
   };
 
-  LoadPlot = () => 
+  newPlot = () => 
   {
-    test(document.getElementById("mycanvas")! as HTMLCanvasElement);
+    //test(document.getElementById("mycanvas")! as HTMLCanvasElement);
+  };
+
+  onRun = () => 
+  {
+    RunProgram("");
   };
 
   dashboardPlotter = () =>
   {
+    // let canvases: ReactElement[] = [];
+    // for(let it of plotters)
+    // {
+    //   let el = (<canvas ref={(c) => it.canvas = c!}></canvas>);
+
+    //   canvases.push(el);
+    // }
+
     return (
       <Fragment>
-        <Button variant="contained" onClick={this.LoadPlot}>SHOW PLOTTER</Button>
+        <Button variant="contained" onClick={this.newPlot}>NEW PLOT</Button>
         <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
-        <canvas id="mycanvas"></canvas>
+        {plotCanvases}
       </Fragment>
     );
   };
@@ -102,7 +116,7 @@ a042
   {
     return (
       <Fragment>
-        <Button variant="contained" onClick={this.onClick}>RUN</Button>
+        <Button variant="contained" onClick={this.onRun}>RUN</Button>
         <Button variant="contained" onClick={this.onClick}>DEBUG</Button>
       </Fragment>
     );
