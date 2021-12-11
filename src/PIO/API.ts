@@ -64,7 +64,7 @@ export class PIOProgram
     {
         Assert(n > 0);
         AssertRange(this._pio.pins, pinbase);
-        AssertRange(this._pio.pins, pinbase+n-1);
+        AssertRange(this._pio.pins, pinbase + n - 1);
     }
     SetOutPins(pin_base: number, n: number)
     {
@@ -92,7 +92,7 @@ export class PIOProgram
         this.AssertPins(pin_base, n);
         this._pio.SetPinDirs(pin_base, n, true);
         this._config.sideset_base = pin_base;
-        this._config.sideset_n= n;
+        this._config.sideset_n = n;
     }
     get clock_divider()
     {
@@ -104,7 +104,7 @@ export class PIOProgram
         Assert(this.loaded);
         this.machine.clkdiv = n;
     }
-    
+
     TryAutoLoad(): boolean
     {
         if(this.loaded)
@@ -155,19 +155,19 @@ export class PIOProgram
     GetAllPinIndices(unique: boolean = true): number[]
     {
         let pins: number[] = [];
-        for(let i = this._config.out_pins_base; i < this._config.out_pins_base+this._config.out_pins_n; i++)
+        for(let i = this._config.out_pins_base; i < this._config.out_pins_base + this._config.out_pins_n; i++)
         {
             pins.push(i);
         }
-        for(let i = this._config.set_pins_base; i < this._config.set_pins_base+this._config.set_pins_n; i++)
+        for(let i = this._config.set_pins_base; i < this._config.set_pins_base + this._config.set_pins_n; i++)
         {
             pins.push(i);
         }
-        for(let i = this._config.in_pins_base; i < this._config.in_pins_base+this._config.in_pins_n; i++)
+        for(let i = this._config.in_pins_base; i < this._config.in_pins_base + this._config.in_pins_n; i++)
         {
             pins.push(i);
         }
-        for(let i = this._config.sideset_base; i < this._config.sideset_base+this._config.sideset_n; i++)
+        for(let i = this._config.sideset_base; i < this._config.sideset_base + this._config.sideset_n; i++)
         {
             pins.push(i);
         }
@@ -200,7 +200,7 @@ export class PIOProgram
     IsInputFull(): boolean
     {
         this.AssertLoaded();
-        return this.machine.TX_FIFO.full
+        return this.machine.TX_FIFO.full;
     }
     PopOutput(): number | null
     {
@@ -212,7 +212,7 @@ export class PIOProgram
     {
         return this.machine.RX_FIFO.empty;
     }
-    constructor(pio: PIO, config: ProgramConfig, load: boolean=false, block_index?: number, machine_index?: number, offset?: number)
+    constructor(pio: PIO, config: ProgramConfig, load: boolean = false, block_index?: number, machine_index?: number, offset?: number)
     {
         this._pio = pio;
         this._config = config;
@@ -226,13 +226,13 @@ export class PIOProgram
 export class PIOAPI
 {
     private _pio: PIO;
-    private programs: PIOProgram[] = []
-    private programs_by_name: Map<string, PIOProgram> = new Map()
+    private programs: PIOProgram[] = [];
+    private programs_by_name: Map<string, PIOProgram> = new Map();
     get cycle()
     {
         return this._pio.current_cycle;
     }
-    AddProgram(name:string, prog: PIOProgram, auto_load:boolean, start:boolean)
+    AddProgram(name: string, prog: PIOProgram, auto_load: boolean, start: boolean)
     {
         Assert(!start || auto_load, "Cannot start a program without loading it");
         Assert(!this.programs_by_name.has(name), "Duplicate program name " + name);
@@ -247,7 +247,7 @@ export class PIOAPI
             }
         }
     }
-    GetProgram(name_or_index: string | number) : PIOProgram
+    GetProgram(name_or_index: string | number): PIOProgram
     {
         if(typeof name_or_index == "number")
         {
@@ -289,11 +289,11 @@ export class PIOAPI
     }
     µsToCycles(µs: number): number
     {
-        return (this._pio.frequency*(µs/1000/100));
+        return (this._pio.frequency * (µs / 1000 / 100));
     }
     CyclesToµs(n: number): number
     {
-        return (n / this._pio.frequency)*1000*1000;
+        return (n / this._pio.frequency) * 1000 * 1000;
     }
     Advanceµs(µs: number): number
     {
@@ -304,7 +304,7 @@ export class PIOAPI
     }
     Advancems(ms: number): number
     {
-        return this.Advanceµs(ms*1000)/1000;
+        return this.Advanceµs(ms * 1000) / 1000;
     }
     AdvanceCycles(n: number)
     {
