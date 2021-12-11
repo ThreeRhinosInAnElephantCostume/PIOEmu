@@ -17,9 +17,17 @@ export enum PlotMode
     STACKED
 }
 
+const DRAG_SPEED_MULTIP = 1;
+
 const CYCLES_PER_PIXEL_MIN = 0.001;
 const CYCLES_PER_PIXEL_MAX = 10;
 const CYCLES_PER_PIXEL_STEP = 0.9;
+
+const GRID_DIVS_H = 9;
+const GRID_DIVS_V_SCOPE = 9;
+const GRID_DIVS_V_STACKED = 3;
+const GRID_COLOR = new ColorRGBA(1, 1, 1, 0.3);
+const GRID_COLOR_HIGHLIGHTED = new ColorRGBA(1, 1, 1, 0.5);
 
 export class Plotter
 {
@@ -30,6 +38,7 @@ export class Plotter
 
     private _wglp: WebglPlot;
     private _linesByPin = new Map<number, WebglLine>();
+    private _gridLines: WebglLine[] = [];
 
     private _cycles_per_pixel = 1;
 
@@ -54,7 +63,51 @@ export class Plotter
         this.plotMode = b;
         this.Refresh();
     }
+    private RemoveGrid()
+    {
+        this._wglp.removeAuxLines();
+    }
+    private BuildGrid()
+    {
+        const AddAuxLine = (xy: Float32Array, c: ColorRGBA) =>
+        {
+            const line = new WebglLine(c, 2);
+            line.xy = new Float32Array(xy);
+            this._gridLines.push(line);
+            this._wglp.addAuxLine(line);
+        };
+        const offxb = 2 * ((this._canvas.width * this._cycles_per_pixel) / (GRID_DIVS_H + 1) / SAMPLE_BUFFER_SIZE);
+        let offx = -(offxb) * Math.ceil(GRID_DIVS_H / 2);
+        for(let i = 0; i < GRID_DIVS_H; i++)
+        {
+            offx += offxb;
+            AddAuxLine(new Float32Array([offx, -10000, offx, 10000]), GRID_COLOR);
+        }
+        if(this.plotMode == PlotMode.STACKED)
+        {
+            for(let bline of this._linesByPin.values())
+            {
+                let offy = bline.offsetY;
+                let offb = PIN_HIGH * (bline.scaleY / (GRID_DIVS_V_STACKED));
+                for(let i = 0; i < GRID_DIVS_V_STACKED; i++)
+                {
+                    offy += offb;
+                    AddAuxLine(new Float32Array([-1000, offy, 1000, offy]),
+                        (i == GRID_DIVS_V_STACKED - 1) ? GRID_COLOR_HIGHLIGHTED : GRID_COLOR);
+                }
 
+            }
+        }
+        else if(this.plotMode == PlotMode.OSCILOSCOPE)
+        {
+
+        }
+    }
+    private UpdateGrid()
+    {
+        this.RemoveGrid();
+        this.BuildGrid();
+    }
     private _Update()
     {
         const waveform_level = Math.log2(this._cycles_per_pixel);
@@ -66,9 +119,13 @@ export class Plotter
         if(this._waveform_step != old_res)
             this._pins.forEach((pin: Pin) => this.ReloadPin(pin));
 
+        this.UpdateGrid();
         this.UpdateLines();
         this.UpdateScaling();
-        this._wglp.gOffsetX = (((this._offset / this._cycles_per_pixel) * this._wglp.gScaleX)) / this._canvas.width;
+        const xoff = (this._cycles_per_pixel * this._canvas.width);
+        const roff = this._offset - xoff;
+        this._wglp.gOffsetX = (((roff / this._cycles_per_pixel))) / this._canvas.width;
+        this._gridLines.forEach(it => it.offsetX = -this._wglp.gOffsetX);
     }
     private _NewFrame()
     {
@@ -87,18 +144,19 @@ export class Plotter
 
     UpdateLines()
     {
+        if(this._pins.length === 0)
+            return;
         const cdif = Number(this._pio.current_cycle - this._lastcycle);
         this._lastcycle = this._pio.current_cycle;
 
-        this._wglp.gScaleX = SAMPLE_BUFFER_SIZE / (this._canvas.width * this._cycles_per_pixel);
 
-        if(cdif == 0 || this._pins.length == 0)
+        if(cdif === 0)
             return;
 
         for(let pin of this._pins)
         {
             let samples = this.GetPinData(pin.index);
-            if(samples.length == 0)
+            if(samples.length === 0)
                 continue;
             Assert(this._linesByPin.has(pin.index));
             const line = this._linesByPin.get(pin.index)!;
@@ -112,19 +170,18 @@ export class Plotter
         const line = this._linesByPin.get(pin.index)!;
         const maxscale = Math.min((this._canvas.width / this._canvas.height), this._vratio);
         const range = 1.0 - 2 * this._vmargin;
-        if(this.plotMode == PlotMode.STACKED)
+        if(this.plotMode === PlotMode.STACKED)
         {
             const scale = (range / this._pins.length);
             const mscale = scale + this._sepmargin;
-            const nodd = (this._pins.length % 2 == 0);
-            const iodd = (index % 2 == 0);
+            const nodd = (this._pins.length % 2 === 0);
+            const iodd = (index % 2 === 0);
             const dm = (iodd ? -1 : 1);
             const offset = (dm * (Math.ceil(index / 2) + (nodd ? 1 : 0)) * mscale) - (scale / 2);
-            console.log(scale, offset);
             line.scaleY = scale / PIN_HIGH;
             line.offsetY = offset;
         }
-        else if(this.plotMode == PlotMode.OSCILOSCOPE)
+        else if(this.plotMode === PlotMode.OSCILOSCOPE)
         {
             const scale = Math.min(range, maxscale);
             line.scaleY = scale / PIN_HIGH;
@@ -133,6 +190,7 @@ export class Plotter
     }
     private UpdateScaling()
     {
+        this._wglp.gScaleX = SAMPLE_BUFFER_SIZE / (this._canvas.width * this._cycles_per_pixel);
         let i = 0;
         for(let pin of this._pins)
         {
@@ -144,7 +202,7 @@ export class Plotter
 
     GetPinData(pin: number): number[]
     {
-        return this._pio.log.GetWaveformForPin(pin, 2 ** this._waveform_step).GetSamples();
+        return this._pio.GetWaveformForPin(pin, 2 ** this._waveform_step).GetSamples();
     }
     private ReloadPin(pin: Pin)
     {
@@ -152,6 +210,7 @@ export class Plotter
         line.lineSpaceX(-1, 2 / line.numPoints);
         line.scaleY = 0.1;
         this.AppendLine(line, this.GetPinData(pin.index));
+        this._lastcycle = this._pio.current_cycle;
     }
     private CreateLine(pin: Pin)
     {
@@ -180,14 +239,14 @@ export class Plotter
         for(let mpin of pins)
         {
             let pin: Pin = (typeof mpin == "number") ? this._pio.pins[mpin] : mpin;
-            Assert(this._pins.indexOf(pin) == -1, "Attempting to add a pin that's already there");
+            Assert(this._pins.indexOf(pin) === -1, "Attempting to add a pin that's already there");
             this.CreateLine(pin);
         }
         this.Refresh();
     }
     AddPin(pin: Pin)
     {
-        Assert(this._pins.indexOf(pin) == -1, "Attempting to add a pin that's already there");
+        Assert(this._pins.indexOf(pin) === -1, "Attempting to add a pin that's already there");
         this.AddPins([pin]);
     }
     constructor(canvas: HTMLCanvasElement, pio: PIO, mode: PlotMode, pins: (Pin | number)[] = [])
@@ -196,10 +255,14 @@ export class Plotter
         this._pio = pio;
         this._wglp = new WebglPlot(this._canvas);
         this._viewKind = mode;
+
         if(pins.length > 0)
             this.AddPins(pins);
         this.Refresh();
-        canvas.addEventListener("resize", (ev) => this._NewFrame());
+        canvas.addEventListener("resize", (ev) => 
+        {
+            this._NewFrame();
+        });
         canvas.addEventListener("mousedown", (ev) => this._dragging = true);
         canvas.addEventListener("mouseup", (ev) => this._dragging = false);
         canvas.addEventListener("mouseleave", (ev) => this._dragging = false);
@@ -207,19 +270,16 @@ export class Plotter
         {
             if(!this._dragging)
                 return;
-            this._offset += ev.movementX * this._cycles_per_pixel;
+            this._offset += ev.movementX * this._cycles_per_pixel * DRAG_SPEED_MULTIP;
             const xoff = (this._cycles_per_pixel * this._canvas.width);
-            this._offset = Math.max(-xoff, this._offset);
+            this._offset = Math.max(0, this._offset);
             this._offset = Math.min(this._offset, SAMPLE_BUFFER_SIZE + xoff);
             this.Refresh();
         });
         canvas.addEventListener("wheel", (ev) => 
         {
-            if(ev.deltaY > 0)
-                this._cycles_per_pixel /= 0.9;
-            else
-                this._cycles_per_pixel *= 0.9;
-            //this._cycles_per_pixel = Math.min(Math.max(this._cycles_per_pixel+(ev.deltaY/5000), CYCLES_PER_PIXEL_MIN), CYCLES_PER_PIXEL_MAX)
+            this._cycles_per_pixel *= CYCLES_PER_PIXEL_STEP ** (Math.round(ev.deltaY / 10));
+            this._cycles_per_pixel = Math.max(Math.min(this._cycles_per_pixel, CYCLES_PER_PIXEL_MAX), CYCLES_PER_PIXEL_MIN);
             this.Refresh();
         });
     }

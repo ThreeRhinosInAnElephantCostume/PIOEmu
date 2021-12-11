@@ -87,12 +87,13 @@ export class PIOProgram
         this._config.in_pins_base = pin_base;
         this._config.in_pins_n = n;
     }
-    SetSidesetPins(pin_base: number, n: number)
+    SetSidesetPins(pin_base: number, n: number, opt_en: boolean)
     {
         this.AssertPins(pin_base, n);
         this._pio.SetPinDirs(pin_base, n, true);
         this._config.sideset_base = pin_base;
         this._config.sideset_n = n;
+        this._config.sideset_opt_en = opt_en;
     }
     get clock_divider()
     {

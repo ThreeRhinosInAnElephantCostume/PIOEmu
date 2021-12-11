@@ -47,6 +47,13 @@ export class ProgramConfig
     f_join_into_rx: boolean = false;
     f_join_into_tx: boolean = false;
 
+    clone(): ProgramConfig
+    {
+        let ret = JSON.parse(JSON.stringify(this));
+        ret.instructions = this.instructions;
+        return ret;
+    }
+
     constructor(instructions: Instruction[])
     {
         this.instructions = instructions;
@@ -252,12 +259,22 @@ export class PIO
 
     frequency: number;
 
-    log: Log = new Log();
+    private log: Log = new Log();
 
     irq_vector: boolean[];
 
     on_clock_end: (pio: PIO) => void = (pio: PIO) => {};
 
+    GetWaveformsForPin(pinid: number): Waveform[]
+    {
+        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
+        return this.log.GetWaveformsForPin(pinid);
+    }
+    GetWaveformForPin(pinid: number, cycles_per_sample: number): Waveform
+    {
+        this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
+        return this.log.GetWaveformForPin(pinid, cycles_per_sample);
+    }
     SimulatePin(pinid: number, state: boolean, cycle: bigint)
     {
         Assert(cycle >= 0);

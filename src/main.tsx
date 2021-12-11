@@ -30,31 +30,41 @@ export function RunProgram(progstr: string)
 
     let instructions = pio.DecodeProgram(dt);
     let config = new ProgramConfig(instructions);
-    config.sideset_n = 1;
-    config.sideset_opt_en = true;
-    config.sideset_base = 1;
     pio.SetPinDir(1, true);
 
     let progp = pio.GetFreeBlockAndMachine(config.length);
 
     function dbshow()
     {
-        console.log(pio.log.GetWaveformForPin(1, 1).GetSamples());
+        console.log(pio.GetWaveformForPin(1, 1).GetSamples());
     }
 
     let api = new PIOAPI(pio);
 
     const prog_div = 1;
 
-    let prog = new PIOProgram(pio, config);
-    api.AddProgram("prog0", prog, true, true);
+    let prog0 = new PIOProgram(pio, config.clone());
+    let prog1 = new PIOProgram(pio, config.clone());
+    api.AddProgram("prog0", prog0, true, true);
+    api.AddProgram("prog1", prog1, true, true);
 
-    prog.clock_divider = prog_div;
+    prog0.clock_divider = prog_div;
+    prog1.clock_divider = prog_div;
 
-    prog.PushInput(16);
-    prog.PushInput(4);
+    prog1.SetSidesetPins(3, 1, true);
+    prog1.PushInput(16);
+    prog1.PushInput(4);
+
+    prog0.SetSidesetPins(1, 1, true);
+    prog0.PushInput(16);
+    prog0.PushInput(5);
 
     api.AdvanceCycles(prog_div);
+    api.Advancems(0.1);
+
+    //prog0.SetSidesetPins(2, 1, true);
+
+    prog0.PushInput(8);
     api.Advancems(0.1);
 
     dbshow();
