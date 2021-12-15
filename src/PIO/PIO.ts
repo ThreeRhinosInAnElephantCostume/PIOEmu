@@ -5,7 +5,7 @@ import { Instruction, JMP, WAIT, IN, OUT, PUSH, PULL, MOV, IRQ, SET, NOP } from 
 
 import { Assert, AssertBits, AssertInteger32, AssertRange, BitRange, LikeInteger32, ShiftDir } from "./utils";
 
-export const SAMPLE_BUFFER_SIZE = 1 * 1000 * 1000;
+export const SAMPLE_BUFFER_SIZE = 1 * 1000 * 10;
 export const PINS_N = 32;
 export const PIN_HIGH = 3.3;
 export const PIN_LOW = 0;
@@ -68,6 +68,7 @@ export class Pin
     index: number;
     isout: boolean = false;
     state: boolean = false;
+    relevant: boolean = false;
     constructor(index: number)
     {
         this.index = index;
@@ -265,6 +266,15 @@ export class PIO
 
     on_clock_end: (pio: PIO) => void = (pio: PIO) => {};
 
+    private MarkPinRelevant(pinid: number)
+    {
+        this.pins[pinid].relevant = true;
+    }
+    GetRelevantPins(): Pin[]
+    {
+        return this.pins.filter(it => it.relevant);
+    }
+
     GetWaveformsForPin(pinid: number): Waveform[]
     {
         this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
@@ -310,12 +320,14 @@ export class PIO
     GetPin(pinid: number)
     {
         Assert(pinid >= 0 && pinid < this.pins.length);
+        this.MarkPinRelevant(pinid);
         this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
         return this.pins[pinid].state;
     }
     SetPin(pinid: number, val: boolean)
     {
         Assert(pinid >= 0 && pinid < this.pins.length);
+        this.MarkPinRelevant(pinid);
         if(!this.pins[pinid].isout)
         {
             this.LogWarning("Pin " + this.pins);
@@ -329,6 +341,7 @@ export class PIO
     SetPinDir(pinid: number, isout: boolean)
     {
         AssertRange(this.pins, pinid);
+        this.MarkPinRelevant(pinid);
         this.pins[pinid].isout = isout;
     }
     SetPinDirs(pin_base: number, n: number, isout: boolean)
@@ -434,6 +447,7 @@ export class PIO
             ret.block_index = i;
             ret.machine_index = mach;
             ret.offset = off;
+            break;
         }
 
         return ret;

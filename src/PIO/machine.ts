@@ -9,10 +9,10 @@ export class Machine
     pio: PIO;
     index: number;
 
-    offset!: number;
-    position!: number;
-    nextposition!: number;
-    running!: boolean;
+    offset: number = 0;
+    position: number = 0;
+    nextposition: number = 0;
+    running: boolean = false;
 
     clkdiv: number = 1;
     clk: number = 0;
@@ -217,10 +217,10 @@ export class Machine
         }
         this.position = this.nextposition;
         this.nextposition++;
-        if(this.nextposition == this.config!.wrap)
-            this.nextposition = this.config!.wrap_target;
-        if(this.nextposition >= this.config!.length)
-            this.nextposition = this.offset;
+        if(this.nextposition == this.config!.wrap + this.offset)
+            this.nextposition = this.config!.wrap_target + this.offset;
+        if(this.nextposition >= this.config!.length + this.offset)
+            this.nextposition = this.offset + this.offset;
         this.curinstgen = this.LoadInstructionFromPosition(block, this.position);
     }
     GetInPins(): number

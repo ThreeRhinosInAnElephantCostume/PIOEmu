@@ -3,10 +3,13 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { Button, ButtonGroup, Slider } from '@mui/material';
-import { plotCanvases, plotters, RunProgram } from '../main';
+import { plotCanvases, plotters, RunProgram, RunTestProgram } from '../main';
 
 import "react-reflex/styles.css";
 import ReactDOM from 'react-dom';
+
+export var js_raw_program: string = "";
+export var pio_raw_program: string = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
 
 type IDEState = {
   dashboard_type: string;
@@ -37,16 +40,16 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
               extensions={[javascript({ jsx: true })]}
               onChange={(valueJS, viewUpdate) =>
               {
-                console.log('value:', valueJS);
+                js_raw_program = valueJS;
               }}
             /></ReflexElement>
           <ReflexSplitter />
           <ReflexElement>
             <CodeMirror id="PIOIDE"
-              value="console.log('This is a PIO editor');"
+              value={pio_raw_program}
               onChange={(valueJS, viewUpdate) =>
               {
-                console.log('value:', valueJS);
+                pio_raw_program = valueJS;
               }}
             />  </ReflexElement>
         </ReflexContainer>
@@ -81,7 +84,9 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
 
   onRun = () => 
   {
-    RunProgram("");
+    //RunTestProgram(pio_raw_program);
+    RunProgram(pio_raw_program, js_raw_program);
+    this.setNavBase();
   };
 
   dashboardPlotter = () =>
@@ -98,7 +103,6 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
       <Fragment>
         <Button variant="contained" onClick={this.newPlot}>NEW PLOT</Button>
         <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
-        {plotCanvases}
       </Fragment>
     );
   };
@@ -109,6 +113,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
       <Fragment>
         <Button variant="contained" onClick={this.onRun}>RUN</Button>
         <Button variant="contained" onClick={this.onClick}>DEBUG</Button>
+        {plotCanvases}
       </Fragment>
     );
   };

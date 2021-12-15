@@ -63,12 +63,12 @@ export class Block
     }
     AddInstructions(offset: number, new_instructions: Instruction[])
     {
-        Assert(offset + new_instructions.length < this.instructions.length);
-        for(let i = offset; i < new_instructions.length; i++)
+        AssertRange(this.instructions, offset);
+        for(let i = 0; i < new_instructions.length; i++)
         {
-            Assert(!this.instruction_map[i]);
-            this.instruction_map[i] = true;
-            this.instructions[i] = new_instructions[i];
+            Assert(!this.instruction_map[offset + i]);
+            this.instruction_map[offset + i] = true;
+            this.instructions[offset + i] = new_instructions[i];
         }
     }
 

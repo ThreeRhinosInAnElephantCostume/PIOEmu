@@ -5,17 +5,15 @@ import { PIOAPI, PIOProgram } from "./PIO/API";
 import { Assert, sleep } from "./PIO/utils";
 import { Plotter, PlotMode } from "./plotter";
 import { ReactElement } from "react";
-export var pio: PIO;
+import { typescriptLanguage } from "@codemirror/lang-javascript";
+import { Instruction } from "./PIO/instructions/instruction";
+import { js_raw_program, pio_raw_program } from "./components/IDEDashboard";
 export var plotters: Plotter[] = [];
 export var plotCanvases: ReactElement[] = [];
 
-export function InitPIO()
+
+function ParseHexProgram(pio: PIO, progstr: string): Instruction[]
 {
-    pio = new PIO();
-}
-export function RunProgram(progstr: string)
-{
-    progstr = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
     let buf = progstr;
     let dt: Uint16Array = new Uint16Array(buf.length / 4);
 
@@ -28,7 +26,49 @@ export function RunProgram(progstr: string)
     }
     dt = dt.slice(0, ii);
 
-    let instructions = pio.DecodeProgram(dt);
+    return pio.DecodeProgram(dt);
+}
+
+export function RunProgram(progstr: string, jsstr: string)
+{
+    plotCanvases = [];
+    plotters = [];
+
+    let pio = new PIO();
+    let _instructions = ParseHexProgram(pio, progstr);
+    let _config = new ProgramConfig(_instructions);
+    let api = new PIOAPI(pio);
+    let _prog = new PIOProgram(pio, _config);
+    api.AddProgram("program_0", _prog, false, false);
+
+    {
+        let prog = api.GetProgram("program_0");
+        prog.SetSidesetPins(1, 1, true);
+        prog.Start(true);
+        prog.PushInput(16);
+        prog.PushInput(7);
+        api.Advancems(0.1);
+    }
+
+    eval(jsstr);
+
+
+    pio.GetRelevantPins().forEach(pin => plotCanvases.push((<canvas style={{ width: '100%', height: 200 }} ref={(c) => 
+    {
+        if(c == null)
+            return;
+        let plot = new Plotter(c, pio, PlotMode.OSCILOSCOPE, [pin]);
+        plotters.push(plot);
+    }}> </canvas>)));
+
+}
+export function RunTestProgram(progstr: string)
+{
+    plotCanvases = [];
+    plotters = [];
+
+    let pio = new PIO();
+    let instructions = ParseHexProgram(pio, progstr);
     let config = new ProgramConfig(instructions);
     pio.SetPinDir(1, true);
 
@@ -51,7 +91,7 @@ export function RunProgram(progstr: string)
     prog0.clock_divider = prog_div;
     prog1.clock_divider = prog_div;
 
-    prog1.SetSidesetPins(3, 1, true);
+    prog1.SetSidesetPins(2, 1, true);
     prog1.PushInput(16);
     prog1.PushInput(4);
 
@@ -62,17 +102,17 @@ export function RunProgram(progstr: string)
     api.AdvanceCycles(prog_div);
     api.Advancems(0.1);
 
-    //prog0.SetSidesetPins(2, 1, true);
+    //prog0.SetSidesetPins(3, 1, true);
 
     prog0.PushInput(8);
     api.Advancems(0.1);
 
     dbshow();
-    plotCanvases.push((<canvas ref={(c) => 
+    plotCanvases.push((<canvas style={{ width: '100%', height: 200 }} ref={(c) => 
     {
         if(c == null)
             return;
-        let plot = new Plotter(c, pio, PlotMode.STACKED, [pio.pins[1], pio.pins[2], pio.pins[3]]);
+        let plot = new Plotter(c, pio, PlotMode.STACKED, prog0.GetAllPinIndices().concat(prog1.GetAllPinIndices()));
         plotters.push(plot);
     }}> </canvas>));
 }
