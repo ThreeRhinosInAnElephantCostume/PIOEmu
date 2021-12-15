@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Box, Button, Dialog, DialogActions, DialogTitle, TextField } from '@mui/material';
+import { IUser } from './interfaces';
 
 const MIN_PASSWORD_LENGTH = 4;
 
