@@ -104,6 +104,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
       <Fragment>
         <Button variant="contained" onClick={this.newPlot}>NEW PLOT</Button>
         <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
+        {plotCanvases}
       </Fragment>
     );
   };
@@ -145,3 +146,4 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
     console.log(this.state.dashboard_type);
   };
 };
+

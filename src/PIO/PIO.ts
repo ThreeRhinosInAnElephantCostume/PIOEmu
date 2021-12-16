@@ -274,7 +274,6 @@ export class PIO
     {
         return this.pins.filter(it => it.relevant);
     }
-
     GetWaveformsForPin(pinid: number): Waveform[]
     {
         this.SimulatePin(pinid, this.pins[pinid].state, this.current_cycle);
