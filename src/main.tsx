@@ -15,17 +15,6 @@ export var plotCanvases: ReactElement[] = [];
 
 function ParseHexProgram(pio: PIO, progstr: string): Instruction[]
 {
-export var pio: PIO;
-export var plotters: Plotter[] = [];
-export var plotCanvases: ReactElement[] = [];
-
-export function InitPIO()
-{
-    pio = new PIO();
-}
-export function RunProgram(progstr: string)
-{
-    progstr = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
     let buf = progstr;
     let dt: Uint16Array = new Uint16Array(buf.length / 4);
 
@@ -40,6 +29,7 @@ export function RunProgram(progstr: string)
 
     return pio.DecodeProgram(dt);
 }
+
 
 export function RunProgram(progstr: string, jsstr: string)
 {
@@ -88,7 +78,6 @@ export function RunTestProgram(progstr: string)
 
     let pio = new PIO();
     let instructions = ParseHexProgram(pio, progstr);
-    let instructions = pio.DecodeProgram(dt);
     let config = new ProgramConfig(instructions);
     pio.SetPinDir(1, true);
 

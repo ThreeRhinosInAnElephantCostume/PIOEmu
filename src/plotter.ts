@@ -31,12 +31,6 @@ const GRID_COLOR_HIGHLIGHTED = new ColorRGBA(1, 1, 1, 0.5);
 
 const CANVAS_BACKGROUND_COLOR = "black";
 
-const GRID_DIVS_H = 9;
-const GRID_DIVS_V_SCOPE = 9;
-const GRID_DIVS_V_STACKED = 3;
-const GRID_COLOR = new ColorRGBA(1, 1, 1, 0.3);
-const GRID_COLOR_HIGHLIGHTED = new ColorRGBA(1, 1, 1, 0.5);
-
 export class Plotter
 {
     private _pio: PIO;
