@@ -1,3 +1,4 @@
+/* eslint-disable no-eval */
 import { WebglPlot, WebglLine, ColorRGBA } from "webgl-plot";
 
 import { PIO, ProgramConfig } from "./PIO/PIO";
@@ -41,25 +42,32 @@ export function RunProgram(progstr: string, jsstr: string)
     let _prog = new PIOProgram(pio, _config);
     api.AddProgram("program_0", _prog, false, false);
 
-    {
-        let prog = api.GetProgram("program_0");
-        prog.SetSidesetPins(1, 1, true);
-        prog.Start(true);
-        prog.PushInput(16);
-        prog.PushInput(7);
-        api.Advancems(0.1);
-    }
+    // {
+    //     let prog = api.GetProgram("program_0");
+    //     prog.SetSidesetPins(1, 1, true);
+    //     prog.Start(true);
+    //     prog.PushInput(16);
+    //     prog.PushInput(7);
+    //     api.Advancems(0.1);
+    // }
 
     eval(jsstr);
 
 
-    pio.GetRelevantPins().forEach(pin => plotCanvases.push((<canvas style={{ width: '100%', height: 200 }} ref={(c) => 
+    plotCanvases.push((<canvas style={{ width: '100%', height: 400 }} ref={(c) => 
     {
         if(c == null)
             return;
-        let plot = new Plotter(c, pio, PlotMode.OSCILOSCOPE, [pin]);
+        let plot = new Plotter(c, pio, PlotMode.STACKED, pio.GetRelevantPins());
         plotters.push(plot);
-    }}> </canvas>)));
+    }}> </canvas >));
+    // pio.GetRelevantPins().forEach(pin => plotCanvases.push((<canvas style={{ width: '100%', height: 200 }} ref={(c) => 
+    // {
+    //     if(c == null)
+    //         return;
+    //     let plot = new Plotter(c, pio, PlotMode.OSCILOSCOPE, [pin]);
+    //     plotters.push(plot);
+    // }}> </canvas>)));
 
 }
 export function RunTestProgram(progstr: string)

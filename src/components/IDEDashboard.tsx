@@ -7,8 +7,9 @@ import { plotCanvases, plotters, RunProgram, RunTestProgram } from '../main';
 
 import "react-reflex/styles.css";
 import ReactDOM from 'react-dom';
+import { js_example_program } from '../example';
 
-export var js_raw_program: string = "";
+export var js_raw_program: string = js_example_program;
 export var pio_raw_program: string = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
 
 type IDEState = {
@@ -36,7 +37,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
           <ReflexSplitter />
           <ReflexElement>
             <CodeMirror id="JAVASCRIPTIDE"
-              value="console.log('Hello world! Welcome to the JavaScript IDE');"
+              value={js_raw_program}
               extensions={[javascript({ jsx: true })]}
               onChange={(valueJS, viewUpdate) =>
               {
