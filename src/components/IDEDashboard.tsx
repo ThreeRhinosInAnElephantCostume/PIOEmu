@@ -3,10 +3,14 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { Button, ButtonGroup, Slider } from '@mui/material';
-import { plotCanvases, plotters, RunProgram } from '../main';
+import { plotCanvases, plotters, RunProgram, RunTestProgram } from '../main';
 
 import "react-reflex/styles.css";
 import ReactDOM from 'react-dom';
+import { js_example_program } from '../example';
+
+export var js_raw_program: string = js_example_program;
+export var pio_raw_program: string = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
 
 type IDEState = {
   dashboard_type: string;
@@ -33,29 +37,20 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
           <ReflexSplitter />
           <ReflexElement>
             <CodeMirror id="JAVASCRIPTIDE"
-              value="console.log('Hello world! Welcome to the JavaScript IDE');"
+              value={js_raw_program}
               extensions={[javascript({ jsx: true })]}
               onChange={(valueJS, viewUpdate) =>
               {
-                console.log('value:', valueJS);
+                js_raw_program = valueJS;
               }}
             /></ReflexElement>
           <ReflexSplitter />
           <ReflexElement>
             <CodeMirror id="PIOIDE"
-              value="90a0
-a0c7
-9080
-a027
-a046
-00a7
-1808
-a042
-0085
-0002"
+              value={pio_raw_program}
               onChange={(valueJS, viewUpdate) =>
               {
-                console.log('value:', valueJS);
+                pio_raw_program = valueJS;
               }}
             />  </ReflexElement>
         </ReflexContainer>
@@ -90,7 +85,9 @@ a042
 
   onRun = () => 
   {
-    RunProgram("");
+    //RunTestProgram(pio_raw_program);
+    RunProgram(pio_raw_program, js_raw_program);
+    this.setNavBase();
   };
 
   dashboardPlotter = () =>
@@ -118,6 +115,7 @@ a042
       <Fragment>
         <Button variant="contained" onClick={this.onRun}>RUN</Button>
         <Button variant="contained" onClick={this.onClick}>DEBUG</Button>
+        {plotCanvases}
       </Fragment>
     );
   };

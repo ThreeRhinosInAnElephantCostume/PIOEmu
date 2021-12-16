@@ -5,10 +5,7 @@ import IDEDashboard from './components/IDEDashboard';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SimpleNavbar from './components/SimpleNavbar';
 import { Plotter } from './plotter';
-import { InitPIO } from './main';
 import { PIO } from './PIO/PIO';
-
-InitPIO();
 
 const maintheme = createTheme({
   palette: {
@@ -23,7 +20,6 @@ const maintheme = createTheme({
     }
   },
 });
-
 export default class App extends Component
 {
   public render()

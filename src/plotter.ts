@@ -21,7 +21,15 @@ const DRAG_SPEED_MULTIP = 1;
 
 const CYCLES_PER_PIXEL_MIN = 0.001;
 const CYCLES_PER_PIXEL_MAX = 10;
-const CYCLES_PER_PIXEL_STEP = 0.9;
+const CYCLES_PER_PIXEL_STEP = 0.95;
+
+const GRID_DIVS_H = 9;
+const GRID_DIVS_V_SCOPE = 9;
+const GRID_DIVS_V_STACKED = 3;
+const GRID_COLOR = new ColorRGBA(1, 1, 1, 0.3);
+const GRID_COLOR_HIGHLIGHTED = new ColorRGBA(1, 1, 1, 0.5);
+
+const CANVAS_BACKGROUND_COLOR = "black";
 
 const GRID_DIVS_H = 9;
 const GRID_DIVS_V_SCOPE = 9;
@@ -69,13 +77,16 @@ export class Plotter
     }
     private BuildGrid()
     {
+        this._wglp.removeAllLines();
+        this._wglp.removeDataLines();
         const AddAuxLine = (xy: Float32Array, c: ColorRGBA) =>
         {
             const line = new WebglLine(c, 2);
             line.xy = new Float32Array(xy);
             this._gridLines.push(line);
-            this._wglp.addAuxLine(line);
+            this._wglp.addLine(line);
         };
+        this.RemoveGrid();
         const offxb = 2 * ((this._canvas.width * this._cycles_per_pixel) / (GRID_DIVS_H + 1) / SAMPLE_BUFFER_SIZE);
         let offx = -(offxb) * Math.ceil(GRID_DIVS_H / 2);
         for(let i = 0; i < GRID_DIVS_H; i++)
@@ -102,10 +113,10 @@ export class Plotter
         {
 
         }
+        this._linesByPin.forEach((v, k) => this._wglp.addDataLine(v));
     }
     private UpdateGrid()
     {
-        this.RemoveGrid();
         this.BuildGrid();
     }
     private _Update()
@@ -174,17 +185,18 @@ export class Plotter
         {
             const scale = (range / this._pins.length);
             const mscale = scale + this._sepmargin;
-            const nodd = (this._pins.length % 2 === 0);
-            const iodd = (index % 2 === 0);
-            const dm = (iodd ? -1 : 1);
-            const offset = (dm * (Math.ceil(index / 2) + (nodd ? 1 : 0)) * mscale) - (scale / 2);
+            const peven = (this._pins.length % 2 === 0);
+            const ieven = +(index % 2 === 1);
+            const dm = (!ieven ? -1 : 1);
+            const offset = dm * ((Math.floor(index / 2) + (peven ? 1 : 0)) * mscale) - ieven * (scale / 2);
+            //const offset = (dm * (Math.ceil(index / 2) + (peven ? 0 : 1)) * mscale) + dm * (scale / 2);
             line.scaleY = scale / PIN_HIGH;
             line.offsetY = offset;
         }
         else if(this.plotMode === PlotMode.OSCILOSCOPE)
         {
             const scale = Math.min(range, maxscale);
-            line.scaleY = scale / PIN_HIGH;
+            line.scaleY = 2 * scale / PIN_HIGH;
             line.offsetY = 0;
         }
     }
@@ -252,6 +264,13 @@ export class Plotter
     constructor(canvas: HTMLCanvasElement, pio: PIO, mode: PlotMode, pins: (Pin | number)[] = [])
     {
         this._canvas = canvas;
+
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        canvas.width = canvas.clientWidth * devicePixelRatio;
+        canvas.height = canvas.clientHeight * devicePixelRatio;
+
+        canvas.style.background = CANVAS_BACKGROUND_COLOR;
+
         this._pio = pio;
         this._wglp = new WebglPlot(this._canvas);
         this._viewKind = mode;
@@ -261,7 +280,8 @@ export class Plotter
         this.Refresh();
         canvas.addEventListener("resize", (ev) => 
         {
-            this._NewFrame();
+            console.log("w: " + this._canvas.width + " h: " + this._canvas.height);
+            this.Refresh();
         });
         canvas.addEventListener("mousedown", (ev) => this._dragging = true);
         canvas.addEventListener("mouseup", (ev) => this._dragging = false);

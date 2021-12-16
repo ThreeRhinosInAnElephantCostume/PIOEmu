@@ -239,6 +239,7 @@ export class PIOAPI
         Assert(!this.programs_by_name.has(name), "Duplicate program name " + name);
         this.programs_by_name.set(name, prog);
         this.programs.push(prog);
+
         if(auto_load)
         {
             Assert(prog.TryAutoLoad(), "Could not auto-load program " + name);
