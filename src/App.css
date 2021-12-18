@@ -14,9 +14,10 @@ button {
 		"main";
 	grid-template-columns: 1fr;
 	background: #c51a4a;
+	overflow: hidden;
 }
 #resizable-divs {
-	height: 700px;
+	height: 800px;
 }
 
 .DASHBOARD {
@@ -27,4 +28,9 @@ button {
 #dashboardNav {
 	display: flex;
 	flex-direction: row;
+}
+
+body {
+	height: 100%;
+	overflow: hidden;
 }

@@ -29,6 +29,8 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
   {
     return (
       <Fragment>
+        <ReflexContainer className="site-content" orientation="horizontal">
+          <ReflexElement>
         <ReflexContainer className="site-content" orientation="vertical">
           <ReflexElement className="DASHBOARD">
             {this.dashboardNav()}
@@ -53,6 +55,11 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
                 pio_raw_program = valueJS;
               }}
             />  </ReflexElement>
+        </ReflexContainer>
+        </ReflexElement>
+        
+        <ReflexSplitter />
+        <ReflexElement>{plotCanvases}</ReflexElement>
         </ReflexContainer>
       </Fragment>
     );
@@ -103,8 +110,6 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
     return (
       <Fragment>
         <Button variant="contained" onClick={this.newPlot}>NEW PLOT</Button>
-        <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
-        {plotCanvases}
       </Fragment>
     );
   };
@@ -115,7 +120,6 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
       <Fragment>
         <Button variant="contained" onClick={this.onRun}>RUN</Button>
         <Button variant="contained" onClick={this.onClick}>DEBUG</Button>
-        {plotCanvases}
       </Fragment>
     );
   };

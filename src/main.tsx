@@ -55,7 +55,7 @@ export function RunProgram(progstr: string, jsstr: string)
     eval(jsstr);
 
 
-    plotCanvases.push((<canvas style={{ width: '100%', height: 400 }} ref={(c) => 
+    plotCanvases.push((<canvas style={{ width: '100%', height: '100%', display:'block' }} ref={(c) => 
     {
         if(c == null)
             return;
