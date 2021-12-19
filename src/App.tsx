@@ -4,31 +4,17 @@ import './App.css';
 import IDEDashboard from './components/IDEDashboard';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SimpleNavbar from './components/SimpleNavbar';
-import { Plotter } from './plotter';
-import { PIO } from './PIO/PIO';
+import maintheme from './components/Theme';
 
-const maintheme = createTheme({
-  palette: {
-    primary: {
-      main: `#C51A4A`, //red
-      dark: `#24292e`,
-      contrastText: 'white',
-    },
-    secondary: {
-      main: '#fff',
-      contrastText: 'black',
-    }
-  },
-});
 export default class App extends Component
 {
-  public render()
+  public render() 
   {
     return (
       <ThemeProvider theme={maintheme}>
         <SimpleNavbar />
         <div id="resizable-divs">
-          <IDEDashboard />
+          <IDEDashboard theme="light"/>
         </div>
       </ThemeProvider>
     );

@@ -1,8 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap");
-.ide {
-	margin: auto;
-}
-
 button {
 	width: 100%;
 }
@@ -13,7 +8,6 @@ button {
 		"site-header"
 		"main";
 	grid-template-columns: 1fr;
-	background: #c51a4a;
 	overflow: hidden;
 }
 #resizable-divs {
@@ -23,6 +17,8 @@ button {
 .DASHBOARD {
 	display: flex;
 	flex-direction: column;
+	margin: auto;
+	background-color: #c51a4a;
 }
 
 #dashboardNav {

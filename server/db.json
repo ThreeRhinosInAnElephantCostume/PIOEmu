@@ -12,5 +12,12 @@
       "password": "password2",
       "id": 2
     }
+  ],
+  "projects": [
+    {
+      "name": "Test_Project",
+      "javascript": "test project",
+      "pio": "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002"
+    }
   ]
 }

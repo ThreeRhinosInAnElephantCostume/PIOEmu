@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Box, Button, Dialog, DialogActions, DialogTitle, TextField } from '@mui/material';
-import { IUser } from './interfaces';
+import { Button, Dialog, DialogActions, DialogTitle, TextField, ThemeProvider } from '@mui/material';
 import axios from 'axios';
+import maintheme from './Theme';
 
-const MIN_PASSWORD_LENGTH = 4;
+type Props = {
+  user_name?: string;
+};
 
 export default function LoginForm() {
     const [open, setOpen] = React.useState(false);
@@ -58,7 +60,6 @@ return (
     <Button onClick={handleLogin}>Login</Button>
     <Button onClick={handleClose}>Cancel</Button>
   </DialogActions>
-  </Dialog>
-  </div>
+  </Dialog></div>
 )
 }
