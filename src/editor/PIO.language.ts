@@ -31,19 +31,21 @@ let parserWithMetadata = parser.configure(
             ]
     });
 
-export const PIOLanguage = LRLanguage.define({
-    parser: parserWithMetadata,
-    languageData: {
-        commentTokens: { line: ";" }
-    }
-});
+export const PIOLanguage = LRLanguage.define(
+    {
+        parser: parserWithMetadata,
+        languageData: {
+            commentTokens: { line: ";" }
+        }
+    });
 
-export const PIOCompletion = PIOLanguage.data.of({
-    autocomplete: completeFromList([
-        { label: "jmp", type: "keyword" },
-        { label: "mov", type: "keyword" },
-    ])
-});
+export const PIOCompletion = PIOLanguage.data.of(
+    {
+        autocomplete: completeFromList([
+            { label: "jmp", type: "keyword" },
+            { label: "mov", type: "keyword" },
+        ])
+    });
 
 export function PIOASM()
 {
