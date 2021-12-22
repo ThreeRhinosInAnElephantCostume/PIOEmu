@@ -1,0 +1,92 @@
+@precedence
+{
+  Label
+  Directive
+  Instruction
+  Sideset
+  Parameter
+  Operator
+  Negation
+  NumberParam
+  Value
+}
+@top Program { (Instruction | Directive | Label)+ }
+
+@skip {  separator | space | emptyline | Comment}
+
+Comment
+{
+  (blockcomment | linecomment)
+}
+
+Operator
+{
+  ("-" | "+" | "*" | "/")
+}
+Value
+{
+  bitreverse? negation? number
+}
+NumberParam
+{
+  Value | ("[" Value (Operator NumberParam)* "]")
+}
+WordParam
+{
+  identifier "--"?
+}
+
+Parameter
+{
+  (NumberParam | WordParam)
+}
+
+Opcode
+{
+  identifier
+}
+
+Label 
+{
+  WordParam colon newline
+}
+
+Directive
+{
+  dot Opcode Parameter* newline 
+}
+
+Instruction
+{
+  Opcode Parameter* Sideset? newline
+}
+
+Sideset
+{
+  @specialize<identifier, "side"> NumberParam
+}
+
+@tokens 
+{
+  @precedence { blockcomment, linecomment, space, emptyline, identifier, operator, negation, bitreverse, colon }
+  identifier { $[a-zA-Z_!=]+ }
+  number { ("0x" | "0b" | "0o")? std.digit+ }
+
+  linecomment { ";" ![\n]* }
+  blockcomment { "/*" blockCommentRest }
+
+  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+
+  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+  space { $[ \t\f]+ }
+  dot { $[.] }
+  colon { $[:] }
+  separator { "," }
+  newline { $[\n] }
+  emptyline { "$\n^" }
+  operator {  $[\+\-*/] }
+  negation { "-" }
+  bitreverse { "\:\:" }
+}
+@detectDelim
