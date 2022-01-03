@@ -17,12 +17,16 @@
     "@types/styled-components": "^5.1.15",
     "@uiw/react-codemirror": "^4.2.4",
     "axios": "^0.24.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "mysql2": "^2.3.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-reflex": "^4.0.3",
     "react-scripts": "^4.0.1",
     "reset-css": "^5.0.1",
     "typescript": "^4.5.2",
+    "universal-cookie": "^4.0.4",
     "web-vitals": "^1.1.2",
     "webgl-plot": "^0.6.6"
   },
@@ -32,7 +36,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "server": "json-server --watch server/db.json"
+    "server": "node server/index.ts"
   },
   "eslintConfig": {
     "extends": [

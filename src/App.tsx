@@ -14,7 +14,7 @@ export default class App extends Component
       <ThemeProvider theme={maintheme}>
         <SimpleNavbar />
         <div id="resizable-divs">
-          <IDEDashboard theme="light"/>
+          <IDEDashboard theme="light" />
         </div>
       </ThemeProvider>
     );

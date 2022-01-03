@@ -9,4 +9,5 @@
     "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
     "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
+    "prettier.configPath": "C:\\Users\\msien\\Documents\\GitHub\\PIOEmu\\.vscode\\settings.json",
 }

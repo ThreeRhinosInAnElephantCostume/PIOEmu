@@ -6,7 +6,6 @@ import { PIOAPI, PIOProgram } from "./PIO/API";
 import { Assert, sleep } from "./PIO/utils";
 import { Plotter, PlotMode } from "./plotter";
 import { ReactElement } from "react";
-import { typescriptLanguage } from "@codemirror/lang-javascript";
 import { Instruction } from "./PIO/instructions/instruction";
 import { js_raw_program, pio_raw_program } from "./components/IDEDashboard";
 export var plotters: Plotter[] = [];
