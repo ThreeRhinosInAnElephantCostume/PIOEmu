@@ -54,8 +54,16 @@ export class ProgramConfig
         return ret;
     }
 
+    set_instructions(instructions: Instruction[])
+    {
+        this.instructions = instructions;
+        this.length = instructions.length;
+        this.wrap_target = instructions.length;
+    }
+
     constructor(instructions: Instruction[])
     {
+        this.set_instructions(instructions);
         this.instructions = instructions;
         this.length = instructions.length;
         this.wrap_target = instructions.length;
@@ -372,8 +380,7 @@ export class PIO
         }
         this.on_clock_end(this);
     }
-
-    DecodeInstruction(dt: number): Instruction
+    static DecodeInstruction(dt: number): Instruction
     {
         Assert(dt >= 0);
         AssertBits(dt, 16);
@@ -420,8 +427,11 @@ export class PIO
         Assert(inst! != null && inst! != undefined, "Invalid instruction!");
         return inst!;
     }
-
-    DecodeProgram(data: Uint16Array): Instruction[]
+    DecodeInstruction(dt: number): Instruction
+    {
+        return PIO.DecodeInstruction(dt);
+    }
+    static DecodeProgram(data: Uint16Array): Instruction[]
     {
         let ret = [];
         for(let it of data)
@@ -429,6 +439,10 @@ export class PIO
             ret.push(this.DecodeInstruction(it));
         }
         return ret;
+    }
+    DecodeProgram(data: Uint16Array): Instruction[]
+    {
+        return PIO.DecodeProgram(data);
     }
     GetFreeBlockAndMachine(n_inst: number): { found: boolean; block_index: number; machine_index: number, offset: number; }
     {

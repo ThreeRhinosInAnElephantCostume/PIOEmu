@@ -1,10 +1,12 @@
 import { tokenToString } from "typescript";
 import { Assert } from "../utils";
+import { Assemble } from "./assembler";
 import { AssemblerException, AssemblerOutput, EventCode } from "./assembler_output";
 
 export enum TokenType
 {
     ERR,
+    LABEL,
     DIRECTIVE,
     OPCODE,
     WORDPARAM,
@@ -41,17 +43,22 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
         tokens: []
     };
 
+
     const trim_whitespace = (str: string) => 
     {
-        return str.replace("$[ \t]*", "").replace("[ \t]*^", "");
+        return str.replace(/$[ \t]*/g, "").replace(/[ \t]*^/g, "");
     };
 
 
-    // Replace comments with spaces
-    program = program.replace(/;![\n]*/, " ");
-    program = program.replace(/\/\/![\n]*/, " ");
-    program = program.replace(/\/\*![\*]*\*\//, " ");
     program = program.toLowerCase();
+
+    // Replace comments with spaces
+    program = program.replace(/;.*\n/g, "\n");
+    program = program.replace(/\/\/.*\n/g, "\n");
+    program = program.replace(/\/\*.*\*\//g, "\n");
+
+
+    program = program.replaceAll(",", " ");
 
     let rawlines: string[] = program.split("\n");
     let lines: string[] = [];
@@ -64,10 +71,10 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
             if(continuation)
             {
                 continuation = false;
-                lines[lines.length - 1] = lines[lines.length - 1] + l.replace("\\", "");
+                lines[lines.length - 1] = lines[lines.length - 1] + l.replaceAll("\\", "");
             }
             else
-                lines.push(l.replace("\\", ""));
+                lines.push(l.replaceAll("\\", ""));
             if(l.endsWith("\\"))
                 continuation = true;
         });
@@ -81,7 +88,7 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
         if(line.length == 0)
             continue;
         const coffset = rawline.indexOf(line[0]);
-        let tokentype = TokenType.ERR;
+        let ttype = TokenType.ERR;
         let tokencontent = "";
         let beginning = true;
         let bracedepth = 0;
@@ -95,8 +102,10 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
         };
         const push_current_token = () =>
         {
-            push_token(tokentype, tokencontent);
-            tokentype = TokenType.ERR;
+            if(ttype == TokenType.WORDPARAM && tokencontent == "side")
+                ttype = TokenType.SIDESET;
+            push_token(ttype, tokencontent);
+            ttype = TokenType.ERR;
             tokencontent = "";
         };
         while(i < line.length)
@@ -107,61 +116,73 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
                 const chr = line[i];
                 if(chr == '.')
                 {
-                    if(tokentype != TokenType.ERR || beginning)
+                    if(ttype != TokenType.ERR || !beginning)
                     {
                         throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "UNEXPECTED '.'", lineoffset, coffset + i);
                     }
-                    tokentype = TokenType.DIRECTIVE;
+                    ttype = TokenType.DIRECTIVE;
                     beginning = false;
                 }
                 else if(chr == " ")
                 {
-                    if(tokentype != TokenType.ERR && bracedepth == 0)
+                    if(ttype != TokenType.ERR && bracedepth == 0)
                     {
                         push_current_token();
                     }
                 }
                 else
                 {
-                    if(chr == "[" || chr == "]")
+                    if(chr == "[")
                     {
-                        const tp = (chr == "[") ? TokenType.DELAY_START : TokenType.DELAY_END;
-                        if(tokentype != TokenType.ERR)
+                        if(co.Tokens.length > 0 && co.Tokens[co.Tokens.length - 1].type == TokenType.DELAY)
+                        {
+                            throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "DUPLICATE '['",
+                                lineoffset, coffset + i, 1);
+                        }
+                        if(ttype != TokenType.ERR)
                         {
                             push_current_token();
                         }
-                        if(co.Tokens.length > 0 && co.Tokens[co.Tokens.length - 1].type == tp)
+                        ttype = TokenType.DELAY;
+                    }
+                    else if(chr == "]")
+                    {
+                        if(ttype != TokenType.DELAY)
                         {
-                            throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "DUPLICATE '" + chr + "'",
-                                lineoffset, coffset + i, 1);
+                            throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "Unexpected '['", lineoffset, coffset + i, 1);
                         }
-                        tokentype = tp;
-                        tokencontent = chr;
                         push_current_token();
                     }
-                    else if(chr.match(/[\(\-0-9]/))
+                    else if(chr == ":" && (ttype == TokenType.OPCODE || beginning))
+                    {
+                        if(beginning)
+                            throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "Unexpected ':'", lineoffset, coffset + i, 1);
+                        ttype = TokenType.LABEL;
+                        push_current_token();
+                    }
+                    else if(chr.match(/[\(0-9]/))
                     {
                         if(beginning)
                         {
                             throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "UNEXPECTED '" + chr + "', expected an opcode or directive",
                                 lineoffset, coffset + i);
                         }
-                        if(tokentype != TokenType.ERR && (tokentype != TokenType.NUMPARAM || (chr == "[" && bracedepth == 0)))
+                        if(ttype != TokenType.ERR && (ttype != TokenType.NUMPARAM || (chr == "[" && bracedepth == 0)))
                         {
                             push_current_token();
                             tokencontent = "";
                         }
                         if(chr == "(")
                         {
-                            if(tokentype)
+                            if(ttype)
                                 bracedepth++;
                         }
-                        tokentype = TokenType.NUMPARAM;
+                        ttype = TokenType.NUMPARAM;
                     }
                     else if(chr == ")")
                     {
                         bracedepth--;
-                        if(bracedepth < 0 || tokentype != TokenType.NUMPARAM || tokencontent == "")
+                        if(bracedepth < 0 || ttype != TokenType.NUMPARAM || tokencontent == "")
                         {
                             throw new AssemblerException(EventCode.ERROR_INVALID_SYNTAX, "UNEXPECTED ']', did you forget a '['?",
                                 lineoffset, coffset + i);
@@ -172,23 +193,23 @@ export function Tokenize(co: AssemblerOutput, program: string): { success: boole
                             tokencontent = "";
                         }
                     }
-                    else if(tokentype == TokenType.ERR)
+                    else if(ttype == TokenType.ERR)
                     {
                         if(beginning)
                         {
-                            tokentype = TokenType.OPCODE;
+                            ttype = TokenType.OPCODE;
                             beginning = false;
                         }
                         else
                         {
-                            tokentype = TokenType.WORDPARAM;
+                            ttype = TokenType.WORDPARAM;
                         }
                     }
                     tokencontent += chr;
                 }
             }
         }
-        if(tokentype != TokenType.ERR)
+        if(ttype != TokenType.ERR)
             push_current_token();
         push_token(TokenType.ENDLINE, "");
     }

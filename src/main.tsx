@@ -9,13 +9,12 @@ import { ReactElement } from "react";
 import { typescriptLanguage } from "@codemirror/lang-javascript";
 import { Instruction } from "./PIO/instructions/instruction";
 import { js_raw_program, pio_raw_program } from "./components/IDEDashboard";
+import { Assemble } from "./PIO/assembler/assembler";
 export var plotters: Plotter[] = [];
 export var plotCanvases: ReactElement[] = [];
 
-
-function ParseHexProgram(pio: PIO, progstr: string): Instruction[]
+function HexToUint16(buf: string): Uint16Array
 {
-    let buf = progstr;
     let dt: Uint16Array = new Uint16Array(buf.length / 4);
 
     let ii = 0;
@@ -26,6 +25,13 @@ function ParseHexProgram(pio: PIO, progstr: string): Instruction[]
         ii++;
     }
     dt = dt.slice(0, ii);
+    return dt;
+}
+
+function ParseHexProgram(pio: PIO, progstr: string): Instruction[]
+{
+    let buf = progstr;
+    let dt: Uint16Array = HexToUint16(progstr);
 
     return pio.DecodeProgram(dt);
 }
@@ -37,8 +43,12 @@ export function RunProgram(progstr: string, jsstr: string)
     plotters = [];
 
     let pio = new PIO();
-    let _instructions = ParseHexProgram(pio, progstr);
-    let _config = new ProgramConfig(_instructions);
+    let ao = Assemble(progstr);
+    //let _instructions = ParseHexProgram(pio, progstr);
+    let s = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
+    console.log(HexToUint16(s));
+    console.log(ao.Raw);
+    let _config = ao.Config!;
     let api = new PIOAPI(pio);
     let _prog = new PIOProgram(pio, _config);
     api.AddProgram("program_0", _prog, false, false);
@@ -55,7 +65,7 @@ export function RunProgram(progstr: string, jsstr: string)
     eval(jsstr);
 
 
-    plotCanvases.push((<canvas style={{ width: '100%', height: '100%', display:'block' }} ref={(c) => 
+    plotCanvases.push((<canvas style={{ width: '100%', height: '100%', display: 'block' }} ref={(c) => 
     {
         if(c == null)
             return;

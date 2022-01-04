@@ -14,6 +14,8 @@ export enum EventCode
     ERROR_NOT_INSIDE_PROGRAM,
     ERROR_INVALID_SYNTAX,
     ERROR_INVALID_EXPRESSION,
+    ERROR_NOT_AT_BEGINNING,
+    ERROR_DUPLICATE_DIRECTIVE,
     ERROR_UNKNOWN_OPCODE,
     ERROR_UNKNOWN_DIRECTIVE,
     ERROR_INVALID_PARAM,
@@ -57,15 +59,22 @@ export class Event
 export class AssemblerException extends Error
 {
     code: EventCode;
-    line?: number;
+    lineortoken?: number;
     column?: number;
     length?: number;
-    constructor(code: EventCode, message: string, line?: number, column?: number, length?: number)
+    constructor(code: EventCode, message: string, line?: number | Token, column?: number, length?: number)
     {
         super(message);
         this.name = "AssemblerException";
         this.code = code;
-        this.line = line;
+        if(line != null && line != undefined && line instanceof Token)
+        {
+            this.lineortoken = line.line;
+            this.column = (column != undefined) ? column : line.column;
+            this.length = (length != undefined) ? length : line.content.length;
+            return;
+        }
+        this.lineortoken = line as number | undefined;
         this.column = column;
         this.length = length;
     }
@@ -81,7 +90,7 @@ export class AssemblerOutput
 
     Program: string = "";
     Tokens: Token[] = [];
-    Raw: Int16Array = new Int16Array();
+    Raw: Uint16Array = new Uint16Array();
     Config?: ProgramConfig;
     Instructions: Instruction[] = [];
 
@@ -113,6 +122,6 @@ export class AssemblerOutput
     }
     LogException(ex: AssemblerException)
     {
-        this.LogCritical(ex.code, ex.message, ex.line, ex.column, ex.length);
+        this.LogCritical(ex.code, ex.message, ex.lineortoken, ex.column, ex.length);
     }
 }
