@@ -5,10 +5,11 @@ import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { Button, ButtonGroup, Switch, FormGroup, FormControlLabel, Grid } from '@mui/material';
 import { plotCanvases, plotters, RunProgram, RunTestProgram } from '../main';
 import "react-reflex/styles.css";
-import { js_example_program } from '../example';
+import { js_example_program, pio_example_program } from '../example';
+import { PIOASM } from '../editor/PIO.language';
 
 export var js_raw_program: string = js_example_program;
-export var pio_raw_program: string = "90a0\na0c7\n9080\na027\na046\n00a7\n1808\na042\n0085\n0002";
+export var pio_raw_program: string = pio_example_program;
 
 type IDEState = {
   dashboard_type: string;
@@ -33,41 +34,42 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
   render()
   {
     return (
-        <ReflexContainer className="site-content" orientation="horizontal">
-          <ReflexElement>
-        <ReflexContainer className="site-content" orientation="vertical">
-          <ReflexElement className="DASHBOARD">
-            {this.dashboardNav()}
-            {this.getDashboard()}
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement>
-            <CodeMirror id="JAVASCRIPTIDE"
-              height="1000px"
-              theme={this.state.theme}
-              value={this.state.javascript}
-              extensions={[javascript({ jsx: true })]}
-              onChange={(valueJS, viewUpdate) =>
-              {
-                this.setState({ javascript: valueJS });
-              }}
-            /></ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement>
-            <CodeMirror id="PIOIDE"
-              height="1000px"
-              theme={this.state.theme}
-              value={this.state.pio}
-              onChange={(valuePIO, viewUpdate) =>
-              {
-                this.setState({ pio: valuePIO });
-              }}
-            /></ReflexElement>
-        </ReflexContainer>
+      <ReflexContainer className="site-content" orientation="horizontal">
+        <ReflexElement>
+          <ReflexContainer className="site-content" orientation="vertical">
+            <ReflexElement className="DASHBOARD">
+              {this.dashboardNav()}
+              {this.getDashboard()}
+            </ReflexElement>
+            <ReflexSplitter />
+            <ReflexElement>
+              <CodeMirror id="JAVASCRIPTIDE"
+                height="1000px"
+                theme={this.state.theme}
+                value={this.state.javascript}
+                extensions={[javascript({ jsx: true, typescript: true })]}
+                onChange={(valueJS, viewUpdate) =>
+                {
+                  this.setState({ javascript: valueJS });
+                }}
+              /></ReflexElement>
+            <ReflexSplitter />
+            <ReflexElement>
+              <CodeMirror id="PIOIDE"
+                height="1000px"
+                theme={this.state.theme}
+                value={this.state.pio}
+                extensions={[PIOASM()]}
+                onChange={(valuePIO, viewUpdate) =>
+                {
+                  this.setState({ pio: valuePIO });
+                }}
+              /></ReflexElement>
+          </ReflexContainer>
         </ReflexElement>
         <ReflexSplitter />
         <ReflexElement>{plotCanvases}</ReflexElement>
-        </ReflexContainer>
+      </ReflexContainer>
     );
   };
 
@@ -115,7 +117,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
     return (
       <ButtonGroup orientation="vertical">
         <Button variant="contained" onClick={this.resetIDE}>RESET IDE</Button>
-        </ButtonGroup>
+      </ButtonGroup>
     );
   };
 
@@ -123,7 +125,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
   {
     return (
       <ButtonGroup orientation="vertical">
-        <Button variant="contained" onClick={this.switchMode}>THEME: {this.state.theme}</Button>           
+        <Button variant="contained" onClick={this.switchMode}>THEME: {this.state.theme}</Button>
         <Button variant="contained" onClick={this.onRun}>RUN</Button>
       </ButtonGroup>
     );
@@ -150,7 +152,7 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
 
   switchMode = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) =>
   {
-    if (this.state.theme == "dark")
+    if(this.state.theme == "dark")
       this.setState({ theme: "light" });
     else
       this.setState({ theme: "dark" });
@@ -166,6 +168,6 @@ export default class IDEDashboard extends React.Component<IDEProps, IDEState> {
     this.setState({ pio: pio_raw_program });
     this.setState({ javascript: js_raw_program });
 
-  }
+  };
 };
 
